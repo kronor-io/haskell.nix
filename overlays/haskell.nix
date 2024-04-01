@@ -67,6 +67,7 @@ final: prev: {
             , modules ? []
             , extra-hackages ? [] # Extra Hackage repositories to use besides main one.
             , hackage
+            , index-state ? null
             }@args:
 
             let
@@ -74,7 +75,7 @@ final: prev: {
             in
 
             import ../package-set.nix {
-                inherit (args) pkg-def pkg-def-extras;
+                inherit (args) pkg-def pkg-def-extras index-state;
                 modules = defaultModules ++ modules;
                 pkgs = final;
                 hackage = hackageAll;
@@ -139,6 +140,7 @@ final: prev: {
             , extra-hackages ? []
             , compiler-nix-name ? null
             , compilerSelection ? p: p.haskell-nix.compiler
+            , index-state
             }:
 
             let
@@ -152,7 +154,7 @@ final: prev: {
                 withMsg = final.lib.assertMsg;
             in
               mkPkgSet {
-                inherit pkg-def;
+                inherit pkg-def index-state;
                 pkg-def-extras = [ plan-pkgs.extras ]
                              ++ pkg-def-extras;
                 # set doExactConfig = true, as we trust cabals resolution for
@@ -655,7 +657,7 @@ final: prev: {
           projectModule: haskellLib.evalProjectModule ../modules/cabal-project.nix projectModule (
             { config, options, ... }:
             let
-              inherit (config) compiler-nix-name compilerSelection evalPackages;
+              inherit (config) compiler-nix-name compilerSelection evalPackages index-state;
               selectedCompiler = (compilerSelection final.buildPackages).${compiler-nix-name};
               callProjectResults = callCabalProjectToNix config;
               plan-pkgs = if !builtins.pathExists (callProjectResults.projectNix + "/plan.json")
@@ -683,7 +685,7 @@ final: prev: {
                   };
                 }
                 else mkCabalProjectPkgSet
-                { inherit compiler-nix-name compilerSelection plan-pkgs;
+                { inherit compiler-nix-name compilerSelection plan-pkgs index-state;
                   pkg-def-extras = config.pkg-def-extras or [];
                   modules = [ { _module.args.buildModules = final.lib.mkForce buildProject.pkg-set; } ]
                     ++ (config.modules or [])
