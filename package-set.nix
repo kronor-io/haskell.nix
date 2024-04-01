@@ -1,5 +1,5 @@
-let f = { hackage, pkgs, pkg-def, pkg-def-extras ? [], modules ? [] }: let
-  buildModules = f { inherit hackage pkg-def pkg-def-extras modules; pkgs = pkgs.buildPackages; };
+let f = { hackage, pkgs, pkg-def, pkg-def-extras ? [], modules ? [], index-state }: let
+  buildModules = f { inherit hackage pkg-def pkg-def-extras modules index-state; pkgs = pkgs.buildPackages; };
 in pkgs.lib.evalModules {
   modules = modules ++ [
     ({ config, lib, ... }: {
@@ -14,6 +14,8 @@ in pkgs.lib.evalModules {
         # augment the existing pkgs set with the specific mappings:
         pkgs = import ./lib/system-pkgs.nix pkgs;
         pkgconfPkgs = import ./lib/pkgconf-nixpkgs-map.nix pkgs;
+
+        inherit index-state;
 
         inherit buildModules;
       };

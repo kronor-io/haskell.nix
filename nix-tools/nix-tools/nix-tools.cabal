@@ -140,6 +140,7 @@ executable hackage-to-nix
                      , containers
                      , bytestring
                      , text
+                     , time
                      , cryptohash-sha256
                      , base16-bytestring
                      , base64-bytestring
