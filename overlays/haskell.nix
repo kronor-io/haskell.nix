@@ -70,6 +70,7 @@ final: prev: {
             , pkg-def-extras ? [] # Additional packages to augment the Base package set `pkg-def` with.
             , modules ? []
             , extra-hackages ? [] # Extra Hackage repositories to use besides main one.
+            , index-state
             }@args:
 
             let
@@ -77,7 +78,7 @@ final: prev: {
             in
 
             import ../package-set.nix {
-                inherit (args) pkg-def pkg-def-extras;
+                inherit (args) pkg-def pkg-def-extras index-state;
                 modules = defaultModules ++ modules;
                 pkgs = final;
                 hackage = hackageAll;
@@ -141,6 +142,7 @@ final: prev: {
             , extra-hackages ? []
             , compiler-nix-name ? null
             , compilerSelection ? p: p.haskell-nix.compiler
+            , index-state
             }:
 
             let
@@ -163,7 +165,7 @@ final: prev: {
                        Make sure you didn't forget to update plan-sha256.''
               );
               mkPkgSet {
-                inherit pkg-def;
+                inherit pkg-def index-state;
                 pkg-def-extras = [ plan-pkgs.extras
                                    # Using the -unchecked version here to avoid infinite
                                    # recursion issues when checkMaterialization = true
@@ -652,7 +654,7 @@ final: prev: {
           projectModule: haskellLib.evalProjectModule ../modules/cabal-project.nix projectModule (
             { config, options, ... }:
             let
-              inherit (config) compiler-nix-name compilerSelection evalPackages;
+              inherit (config) compiler-nix-name compilerSelection evalPackages index-state;
 
               callProjectResults = callCabalProjectToNix config;
               plan-pkgs = importAndFilterProject {
@@ -671,7 +673,7 @@ final: prev: {
                   };
                 }
                 else mkCabalProjectPkgSet
-                { inherit compiler-nix-name compilerSelection plan-pkgs;
+                { inherit compiler-nix-name compilerSelection plan-pkgs index-state;
                   pkg-def-extras = config.pkg-def-extras or [];
                   modules = [ { _module.args.buildModules = final.lib.mkForce buildProject.pkg-set; } ]
                     ++ (config.modules or [])

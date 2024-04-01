@@ -1,4 +1,4 @@
-{ lib, config, pkgs, ... }:
+{ lib, config, pkgs, index-state, ... }:
 
 let
   # hackage looks like the following:
@@ -87,7 +87,21 @@ let
           revisions =
             lib.mapAttrs
               (_: rev2Config { inherit pname vnum; inherit (version) sha256; })
-              (makeContentAddressed version.revisions);
+              (makeContentAddressed
+                (
+                  let maxAllowedRev = (lib.attrsets.foldlAttrs
+                   (acc: name: value:
+                     if value.revTimestamp > acc.rTimestamp
+                     then { rName = name; rTimestamp = value.revTimestamp; }
+                     else acc
+                   )
+                   ({ rName = "default"; rTimestamp = "0"; })
+                   (
+                   lib.attrsets.filterAttrs (_: a: builtins.isAttrs a && a.revTimestamp <= index-state)
+                     version.revisions
+                   )).rName;
+                  in (version.revisions // {"default" = version.revisions."${maxAllowedRev}";}))
+              );
         }));
 
 in

@@ -14,6 +14,7 @@ import qualified Data.ByteString.Char8         as BS
 import           Data.Foldable                            ( toList
                                                           , for_
                                                           )
+import           Data.Int
 import           Data.List                                ( intersperse )
 import           Data.Map                                 ( Map )
 import qualified Data.Map                      as Map
@@ -25,6 +26,8 @@ import           Data.String                              ( IsString(fromString)
 import           Data.Text                                ( Text )
 import qualified Data.Text                     as T       ( pack )
 import           Data.Text.Encoding                       ( decodeUtf8 )
+import           Data.Time.Format.ISO8601                 ( iso8601Show )
+import           Data.Time.Clock.POSIX                    ( posixSecondsToUTCTime )
 import           Distribution.Hackage.DB                  ( hackageTarball )
 import qualified Distribution.Hackage.DB.Parsed
                                                as P
@@ -136,16 +139,18 @@ version2nix pname vnum (U.VersionData { U.cabalFileRevisions, U.metaFile }) =
 revBindingJson
   :: PackageName
   -> Version
-  -> BS.ByteString
+  -> (Int64, BS.ByteString)
+  -- ^ (EpochTime, Cabal File)
   -> Integer
   -> GPDWriter (Text, NExpr)
-revBindingJson pname vnum cabalFile revNum = do
+revBindingJson pname vnum (epochTime, cabalFile) revNum = do
   let qualifiedName = mconcat $ intersperse
         "-"
         [prettyPname, fromPretty vnum, revName, BS.unpack cabalHash]
       revName :: (Semigroup a, IsString a) => a
       revName     = "r" <> fromString (show revNum)
       revPath     = "." </> "hackage" </> qualifiedName <.> "nix"
+      revTimestamp = iso8601Show (posixSecondsToUTCTime (fromIntegral epochTime))
       prettyPname = fromPretty pname
       cabalHash   = Base16.encode $ hash cabalFile
   modify' $ mappend $ Seq.singleton
@@ -153,5 +158,6 @@ revBindingJson pname vnum cabalFile revNum = do
   return (revName, mkNonRecSet
     [ "nix" $= mkSym "import" @@ mkSym (T.pack ("../hackage/" <> qualifiedName <> ".nix"))
     , "revNum" $= mkInt revNum
+    , "revTimestamp" $= mkStr (T.pack revTimestamp)
     , "sha256" $= mkStr (decodeUtf8 cabalHash)
     ])

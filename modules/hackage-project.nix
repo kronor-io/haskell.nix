@@ -1,6 +1,6 @@
 { lib, config, pkgs, haskellLib, ... }:
 let
-  inherit (config) name version revision;
+  inherit (config) name version revision index-state;
 in {
   _file = "haskell.nix/modules/hackage-project.nix";
   options = {
@@ -21,6 +21,19 @@ in {
       type = lib.types.str;
       default = "default";
       description = ''Hackage revision to use ("default", "r1", "r2", etc.)'';
+      apply = r: if r == "default"
+                 then (lib.attrsets.foldlAttrs
+                   (acc: name: value:
+                     if value.revTimestamp > acc.rTimestamp
+                     then { rName = name; rTimestamp = value.revTimestamp; }
+                     else acc
+                   )
+                   ({ rName = "default"; rTimestamp = "0"; })
+                   (
+                   lib.attrsets.filterAttrs (_: a: builtins.isAttrs a && a.revTimestamp <= index-state)
+                     (pkgs.haskell-nix.hackage.${config.name}.${version}.revisions)
+                   )).rName
+                 else r;
     };
   };
   config = {
