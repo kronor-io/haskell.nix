@@ -26,7 +26,7 @@
     "hls-2.12" = { url = "github:haskell/haskell-language-server/2.12.0.0"; flake = false; };
     "hls"     = { url = "github:haskell/haskell-language-server"; flake = false; };
     hackage = {
-      url = "github:input-output-hk/hackage.nix";
+      url = "github:kronor-io/hackage.nix/main";
       flake = false;
     };
     hackage-for-stackage = {
