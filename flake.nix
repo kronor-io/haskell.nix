@@ -32,7 +32,7 @@
     "hls-2.6" = { url = "github:haskell/haskell-language-server/2.6.0.0"; flake = false; };
     hydra.url = "hydra";
     hackage = {
-      url = "github:input-output-hk/hackage.nix";
+      url = "github:kronor-io/hackage.nix/main";
       flake = false;
     };
     stackage = {
