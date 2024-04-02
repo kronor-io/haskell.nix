@@ -210,11 +210,11 @@
         "stackage": "stackage"
       },
       "locked": {
-        "lastModified": 1712038300,
-        "narHash": "sha256-88fDwMsBueUMrmc5Z6PEfoZMtjrBBnt81zeBbuex/kk=",
+        "lastModified": 1712042891,
+        "narHash": "sha256-d0QOyLlcEDmXUIN2DqDfYoft45OGcMsp+xhyESSmG88=",
         "owner": "kronor-io",
         "repo": "haskell.nix",
-        "rev": "7130f91d1099a35c759e16dfd16f698d79af715c",
+        "rev": "e25d841b149b45faf7616f0f45d52f0d287d598f",
         "type": "github"
       },
       "original": {
