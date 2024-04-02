@@ -1,4 +1,4 @@
-name: "Update pins for hackage.nix and stackage.nix"
+name: "Update pins for hackage.nix"
 
 on:
   workflow_dispatch:
@@ -16,14 +16,13 @@ jobs:
           extra_nix_config: |
             trusted-public-keys = hydra.iohk.io:f/Ea+s+dFdN+3Y/G+FDgSq+a5NEWhJGzdjvKNGv0/EQ= loony-tools:pr9m4BkM/5/eSTZlkQyRt57Jz7OMBxNSUiMC4FkcNfk= cache.nixos.org-1:6NCHdD59X431o0gWypbMrAURkbJ16ZPMQFGspcDShjY=
             substituters = https://cache.iog.io https://cache.zw3rk.com https://cache.nixos.org/
-      - name: "Update pins"
+      - name: "Update hackage pin"
         run: |
           nix flake update hackage
-          nix flake update stackage
       - name: Commit and push changes
         run: |
-          git config --local user.email "devops+nix-tools@iohk.io"
-          git config --local user.name "IOHK"
+          git config --local user.email "pranaysashank@users.noreply.github.com"
+          git config --local user.name "pranaysashank"
           git add .
-          git commit -m "Update Hackage and Stackage"
+          git commit -m "Update Hackage"
           git push
