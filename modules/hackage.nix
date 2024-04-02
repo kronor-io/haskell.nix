@@ -88,7 +88,10 @@ let
             lib.mapAttrs
               (_: rev2Config { inherit pname vnum; inherit (version) sha256; })
               (makeContentAddressed
-                (
+                (if builtins.isNull index-state
+                then version.revisions
+                else
+                  (
                   let maxAllowedRev = (lib.attrsets.foldlAttrs
                    (acc: name: value:
                      if value.revTimestamp > acc.rTimestamp
@@ -97,10 +100,10 @@ let
                    )
                    ({ rName = "default"; rTimestamp = "0"; })
                    (
-                   lib.attrsets.filterAttrs (_: a: builtins.isAttrs a && a.revTimestamp <= index-state)
-                     version.revisions
+                     lib.attrsets.filterAttrs (_: a: builtins.isAttrs a && a.revTimestamp <= index-state)
+                       (version.revisions)
                    )).rName;
-                  in (version.revisions // {"default" = version.revisions."${maxAllowedRev}";}))
+                  in (version.revisions // {"default" = version.revisions."${maxAllowedRev}";})))
               );
         }));
 

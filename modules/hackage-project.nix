@@ -21,7 +21,7 @@ in {
       type = lib.types.str;
       default = "default";
       description = ''Hackage revision to use ("default", "r1", "r2", etc.)'';
-      apply = r: if r == "default"
+      apply = r: if r == "default" && !(builtins.isNull index-state)
                  then (lib.attrsets.foldlAttrs
                    (acc: name: value:
                      if value.revTimestamp > acc.rTimestamp
