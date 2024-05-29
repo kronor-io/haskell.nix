@@ -157,11 +157,11 @@
     "hackage": {
       "flake": false,
       "locked": {
-        "lastModified": 1712036635,
-        "narHash": "sha256-64bCZ02E8QKCzH0Y/9WfyVoYN6jTgT5xnV5x3H9HSds=",
+        "lastModified": 1716941709,
+        "narHash": "sha256-Q9W5ukjxcsMpaYuddqHuw/CsMxKy3X5U6GgtQy5/iIk=",
         "owner": "kronor-io",
         "repo": "hackage.nix",
-        "rev": "e196dcb9f60537aee7d6bc43442f254ee7cfca8c",
+        "rev": "69d5d1a3d6e37eb8f2d4fee0b950f6546a9dfefa",
         "type": "github"
       },
       "original": {
@@ -196,7 +196,7 @@
         "nix-tools-static": "nix-tools-static",
         "nixpkgs": [
           "haskellNix",
-          "nixpkgs-unstable"
+          "nixpkgs-2405"
         ],
         "nixpkgs-2003": "nixpkgs-2003",
         "nixpkgs-2105": "nixpkgs-2105",
@@ -205,23 +205,24 @@
         "nixpkgs-2211": "nixpkgs-2211",
         "nixpkgs-2305": "nixpkgs-2305",
         "nixpkgs-2311": "nixpkgs-2311",
+        "nixpkgs-2405": "nixpkgs-2405",
         "nixpkgs-unstable": "nixpkgs-unstable",
         "old-ghc-nix": "old-ghc-nix",
         "stackage": "stackage"
       },
       "locked": {
-        "lastModified": 1712042891,
-        "narHash": "sha256-d0QOyLlcEDmXUIN2DqDfYoft45OGcMsp+xhyESSmG88=",
-        "owner": "kronor-io",
-        "repo": "haskell.nix",
-        "rev": "e25d841b149b45faf7616f0f45d52f0d287d598f",
-        "type": "github"
+        "lastModified": 1716970759,
+        "narHash": "sha256-nlm3d2pYxPjHx+wU5/Sb/LlFm29Gl97+DobXKcrH75k=",
+        "ref": "refs/heads/proper-index-state",
+        "rev": "4dc1285768c5a64cbf3efafda9f59957ecdc8808",
+        "revCount": 3309,
+        "type": "git",
+        "url": "file:///home/pranaysashank/src/input-output-hk/haskell.nix/"
       },
       "original": {
-        "owner": "kronor-io",
-        "ref": "proper-index-state",
-        "repo": "haskell.nix",
-        "type": "github"
+        "rev": "4dc1285768c5a64cbf3efafda9f59957ecdc8808",
+        "type": "git",
+        "url": "file:///home/pranaysashank/src/input-output-hk/haskell.nix/"
       }
     },
     "hls-1.10": {
@@ -577,6 +578,22 @@
       "original": {
         "owner": "NixOS",
         "ref": "nixpkgs-23.11-darwin",
+        "repo": "nixpkgs",
+        "type": "github"
+      }
+    },
+    "nixpkgs-2405": {
+      "locked": {
+        "lastModified": 1716912695,
+        "narHash": "sha256-2msgBRDctlysuQqMA1qxm4Sun4ZjM/CpdfJg7LVqyBM=",
+        "owner": "NixOS",
+        "repo": "nixpkgs",
+        "rev": "682b72ac26d87608a793c7dffb5976862f70bd63",
+        "type": "github"
+      },
+      "original": {
+        "owner": "NixOS",
+        "ref": "release-24.05",
         "repo": "nixpkgs",
         "type": "github"
       }

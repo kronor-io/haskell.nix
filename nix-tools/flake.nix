@@ -1,6 +1,6 @@
 {
   inputs.nixpkgs.follows = "haskellNix/nixpkgs";
-  inputs.haskellNix.url = "github:kronor-io/haskell.nix/proper-index-state";
+  inputs.haskellNix.url = "git+file:///home/pranaysashank/src/input-output-hk/haskell.nix/?rev=4dc1285768c5a64cbf3efafda9f59957ecdc8808";
 
   outputs = { self, nixpkgs, haskellNix, ... }:
     let
