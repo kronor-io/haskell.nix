@@ -109,7 +109,7 @@ let
     nix-tools
     bootstrap
     compiler-llvm
-    ghc
+    # ghc
     ghc-packages
     darwin
     windows
