@@ -91,11 +91,10 @@ final: prev: {
         # "ghc8102-experimental").
         excludeBootPackages = compiler-nix-name: pkg-def: hackage:
           let original = pkg-def hackage;
-              bootPkgNames = final.lib.attrNames
-                final.ghc-boot-packages.${
-                  if compiler-nix-name != null
-                    then compiler-nix-name
-                    else (pkg-def hackage).compiler.nix-name};
+              bootPkgNames = [ "base" "bytestring" "deepseq" "deriveConstants" "genprimopcode" "ghc"
+                               "ghc-bignum" "ghc-boot" "ghc-heap" "ghc-prim" "ghci" "hpc"
+                               "integer-gmp" "iserv" "parsec" "pretty" "remote-iserv" "template-haskell"
+                             ];
           in original // {
             packages = final.lib.filterAttrs (n: _: final.lib.all (b: n != b) bootPkgNames)
               original.packages;
@@ -150,7 +149,7 @@ final: prev: {
                   if compiler-nix-name != null
                     then compiler-nix-name
                     else ((plan-pkgs.extras hackage).compiler or (plan-pkgs.pkgs hackage).compiler).nix-name;
-                pkg-def = excludeBootPackages compiler-nix-name plan-pkgs.pkgs;
+                pkg-def = plan-pkgs.pkgs;
                 patchesModule = ghcHackagePatches.${compiler-nix-name'} or {};
                 package.compiler-nix-name.version = (compilerSelection final.buildPackages).${compiler-nix-name'}.version;
                 plan.compiler-nix-name.version = (compilerSelection final.buildPackages).${(plan-pkgs.pkgs hackage).compiler.nix-name}.version;
@@ -169,7 +168,7 @@ final: prev: {
                 pkg-def-extras = [ plan-pkgs.extras
                                    # Using the -unchecked version here to avoid infinite
                                    # recursion issues when checkMaterialization = true
-                                   final.ghc-boot-packages-unchecked.${compiler-nix-name'}
+                                   # final.ghc-boot-packages-unchecked.${compiler-nix-name'}
                                  ]
                              ++ pkg-def-extras;
                 # set doExactConfig = true, as we trust cabals resolution for

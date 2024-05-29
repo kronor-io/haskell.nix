@@ -616,7 +616,7 @@
         "iserv-proxy": "iserv-proxy",
         "nix-tools-static": "nix-tools-static",
         "nixpkgs": [
-          "nixpkgs-unstable"
+          "nixpkgs-2405"
         ],
         "nixpkgs-2003": "nixpkgs-2003",
         "nixpkgs-2105": "nixpkgs-2105",
