@@ -1,7 +1,7 @@
 final: _prev:
 
 let
-  compiler-nix-name = "ghc8107";
+  compiler-nix-name = "ghc982";
 
   nix-tools = nix-tools-set {
     materialized = ./materialized;

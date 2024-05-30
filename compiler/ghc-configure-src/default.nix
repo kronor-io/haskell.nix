@@ -74,6 +74,7 @@ let self =
 , ghc-commit-id ? null
 , src-spec
 , ghc-patches ? []
+, hadrian
 
 # extra values we want to have available as passthru values.
 , extra-passthru ? {}
@@ -235,54 +236,6 @@ let
   # bindist logic as we can. It's slow, and buggy, and doesn't provide any
   # value for us.
   installStage1 = useHadrian && (haskell-nix.haskellLib.isCrossTarget || stdenv.targetPlatform.isMusl);
-
-  hadrian =
-    let
-      compiler-nix-name =
-        if builtins.compareVersions ghc-version "9.4.7" < 0
-          then "ghc928"
-          else "ghc962";
-    in
-    buildPackages.pinned-haskell-nix.tool compiler-nix-name "hadrian" {
-      compilerSelection = p: p.haskell.compiler;
-      index-state = buildPackages.haskell-nix.internalHackageIndexState;
-      # Verions of hadrian that comes with 9.6 depends on `time`
-      materialized =
-        if builtins.compareVersions ghc-version "9.4" < 0
-          then ../../materialized/${compiler-nix-name}/hadrian-ghc92
-        else if builtins.compareVersions ghc-version "9.6" < 0
-          then ../../materialized/${compiler-nix-name}/hadrian-ghc94
-        else if builtins.compareVersions ghc-version "9.8" < 0
-          then ../../materialized/${compiler-nix-name}/hadrian-ghc96
-        else if builtins.compareVersions ghc-version "9.9" < 0
-          then ../../materialized/${compiler-nix-name}/hadrian-ghc98
-        else ../../materialized/${compiler-nix-name}/hadrian-ghc99;
-      modules = [{
-        # Apply the patches in a way that does not require using something
-        # like `srcOnly`. The problem with `pkgs.srcOnly` was that it had to run
-        # on a platform at eval time.
-        packages.hadrian.prePatch = ''
-          cd ..
-        '';
-        packages.hadrian.patches = ghc-patches;
-        packages.hadrian.postPatch = ''
-          cd hadrian
-        '';
-      }];
-      cabalProjectLocal = null;
-      cabalProjectFreeze = null;
-      src = haskell-nix.haskellLib.cleanSourceWith {
-        src = {
-          outPath = buildPackages.srcOnly {
-            name = "hadrian";
-            inherit src;
-          };
-          filterPath = { path, ... }: path;
-        };
-        subDir = "hadrian";
-        includeSiblings = true;
-      };
-    };
 
   # For a discription of hadrian command line args
   # see https://gitlab.haskell.org/ghc/ghc/blob/master/hadrian/README.md

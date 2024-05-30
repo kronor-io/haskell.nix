@@ -38,6 +38,7 @@ in {
                     url = "https://downloads.haskell.org/~ghc/${version}/ghc-${version}-src.tar.xz";
                     sha256 = "sha256-4vt6fddGEjfSLoNlqD7dnhp30uFdBF85RTloRah3gck=";
                 };
+                hadrian = prevAttrs.hadrian;
             })).passthru.configured-src;
         };
       });
