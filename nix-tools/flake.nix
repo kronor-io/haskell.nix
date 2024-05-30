@@ -1,6 +1,6 @@
 {
   inputs.nixpkgs.follows = "haskellNix/nixpkgs";
-  inputs.haskellNix.url = "git+file:///home/pranaysashank/src/input-output-hk/haskell.nix/?rev=4dc1285768c5a64cbf3efafda9f59957ecdc8808";
+  inputs.haskellNix.url = "git+file:///home/pranaysashank/src/input-output-hk/haskell.nix/?rev=879ced1ff09a5654e2e128b89b81bf365b95d12b";
 
   outputs = { self, nixpkgs, haskellNix, ... }:
     let
