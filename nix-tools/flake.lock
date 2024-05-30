@@ -211,18 +211,18 @@
         "stackage": "stackage"
       },
       "locked": {
-        "lastModified": 1716970759,
-        "narHash": "sha256-nlm3d2pYxPjHx+wU5/Sb/LlFm29Gl97+DobXKcrH75k=",
-        "ref": "refs/heads/proper-index-state",
-        "rev": "4dc1285768c5a64cbf3efafda9f59957ecdc8808",
-        "revCount": 3309,
-        "type": "git",
-        "url": "file:///home/pranaysashank/src/input-output-hk/haskell.nix/"
+        "lastModified": 1717093715,
+        "narHash": "sha256-lERgO7SibUqSoFpSVgqu8l3REljLxkGuTxcpOcaiIpw=",
+        "owner": "kronor-io",
+        "repo": "haskell.nix",
+        "rev": "be45f0b3cd113b0f0bf00824d5414dbc3ada5ba3",
+        "type": "github"
       },
       "original": {
-        "rev": "4dc1285768c5a64cbf3efafda9f59957ecdc8808",
-        "type": "git",
-        "url": "file:///home/pranaysashank/src/input-output-hk/haskell.nix/"
+        "owner": "kronor-io",
+        "ref": "wip-nixpkgs-ghc",
+        "repo": "haskell.nix",
+        "type": "github"
       }
     },
     "hls-1.10": {
