@@ -95,10 +95,16 @@ final: prev: {
                                "ghc-bignum" "ghc-boot" "ghc-heap" "ghc-prim" "ghci" "hpc"
                                "integer-gmp" "iserv" "parsec" "pretty" "remote-iserv" "template-haskell"
                              ];
-          in original // {
-            packages = final.lib.filterAttrs (n: _: final.lib.all (b: n != b) bootPkgNames)
-              original.packages;
+          in
+            original // {
+            packages = original.packages // final.lib.mapAttrs (key: value : { revision = value; }) (builtins.intersectAttrs original.packages final.ghc-boot-packages-unchecked.${compiler-nix-name});
           };
+            # if builtins.hasAttr "ghc" original.packages then
+            #     original // {
+            #       packages = final.lib.filterAttrs (n: _: final.lib.all (b: n != b) bootPkgNames)
+            #         original.packages;
+            #     }
+            #  else original;
 
         # Create a Haskell package set based on a Stack configuration.
         mkStackPkgSet =
@@ -149,7 +155,7 @@ final: prev: {
                   if compiler-nix-name != null
                     then compiler-nix-name
                     else ((plan-pkgs.extras hackage).compiler or (plan-pkgs.pkgs hackage).compiler).nix-name;
-                pkg-def = plan-pkgs.pkgs;
+                pkg-def = excludeBootPackages compiler-nix-name plan-pkgs.pkgs;
                 patchesModule = ghcHackagePatches.${compiler-nix-name'} or {};
                 package.compiler-nix-name.version = (compilerSelection final.buildPackages).${compiler-nix-name'}.version;
                 plan.compiler-nix-name.version = (compilerSelection final.buildPackages).${(plan-pkgs.pkgs hackage).compiler.nix-name}.version;

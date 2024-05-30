@@ -62,13 +62,13 @@ let
     # Use hoogle.nix from at least nixpkgs 22.05
     nixpkgs = if lib.versionAtLeast lib.trivial.release "22.05"
       then pkgs.path
-      else pkgs.haskell-nix.sources.nixpkgs-2205;
+      else pkgs.haskell-nix.sources.nixpkgs-2405;
     nixpkgsHoogle = import (nixpkgs + /pkgs/development/haskell-modules/hoogle.nix);
-  in { packages ? [], hoogle ? pkgs.buildPackages.haskell-nix.tool "ghc928" "hoogle" {
+  in { packages ? [], hoogle ? pkgs.buildPackages.haskell-nix.tool "ghc982" "hoogle" {
         inherit evalPackages;
-        version = "5.0.18.3";
+        version = "5.0.18.4";
         # index-state = pkgs.haskell-nix.internalHackageIndexState;
-        index-state = "2023-06-05T00:00:00Z";
+        index-state = "2024-05-15T00:00:00Z";
       }
     }:
     let

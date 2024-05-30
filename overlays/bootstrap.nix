@@ -26,21 +26,10 @@ in {
     resolve-compiler-name = name: final.haskell-nix.compilerNameMap.${name} or name;
     # Use this to disable the existing haskell infra structure for testing purposes
     compiler = {
-            ghc982 = final.haskell.compiler.ghc982; /* final.callPackage ../compiler/ghc (traceWarnOld "9.8" {
-                extra-passthru = { buildGHC = final.buildPackages.haskell-nix.compiler.ghc982; };
-
-                bootPkgs = bootPkgsGhc94 // {
-                  ghc = if final.stdenv.buildPlatform != final.stdenv.targetPlatform
-                    then final.buildPackages.buildPackages.haskell-nix.compiler.ghc964
-                    else final.buildPackages.buildPackages.haskell.compiler.ghc964
-                          or final.buildPackages.buildPackages.haskell.compiler.ghc963
-                          or final.buildPackages.buildPackages.haskell.compiler.ghc962
-                          or final.buildPackages.buildPackages.haskell.compiler.ghc945
-                          or final.buildPackages.buildPackages.haskell.compiler.ghc944
-                          or final.buildPackages.buildPackages.haskell.compiler.ghc943;
-                };
-                inherit sphinx;
-
+      ghc982 = final.haskell.compiler.ghc982.overrideAttrs (prevAttrs: rec {
+        passthru = prevAttrs.passthru // {
+          configured-src =
+            (final.callPackage ../compiler/ghc-configure-src ({
                 buildLlvmPackages = final.buildPackages.llvmPackages_12;
                 llvmPackages = final.llvmPackages_12;
 
@@ -49,10 +38,9 @@ in {
                     url = "https://downloads.haskell.org/~ghc/${version}/ghc-${version}-src.tar.xz";
                     sha256 = "sha256-4vt6fddGEjfSLoNlqD7dnhp30uFdBF85RTloRah3gck=";
                 };
-
-                ghc-patches = ghc-patches "9.8.2";
-            });
-            */
+            })).passthru.configured-src;
+        };
+      });
         };
 
     # Both `cabal-install` and `nix-tools` are needed for `cabalProject`
