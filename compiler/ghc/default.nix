@@ -244,7 +244,7 @@ let
       compiler-nix-name =
         if builtins.compareVersions ghc-version "9.4.7" < 0
           then "ghc928"
-          else "ghc962";
+          else "ghc982";
     in
     buildPackages.pinned-haskell-nix.tool compiler-nix-name "hadrian" {
       compilerSelection = p: p.haskell.compiler;
