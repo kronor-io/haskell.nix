@@ -96,15 +96,15 @@ final: prev: {
                                "integer-gmp" "iserv" "parsec" "pretty" "remote-iserv" "template-haskell"
                              ];
           in
-            original // {
-            packages = original.packages // final.lib.mapAttrs (key: value : { revision = value; }) (builtins.intersectAttrs original.packages final.ghc-boot-packages-unchecked.${compiler-nix-name});
-          };
-            # if builtins.hasAttr "ghc" original.packages then
+            if builtins.hasAttr "ghc" original.packages then
+              original // {
+                packages = original.packages // final.lib.mapAttrs (key: value : { revision = value; }) (builtins.intersectAttrs original.packages final.ghc-boot-packages-unchecked.${compiler-nix-name});
+              }
             #     original // {
             #       packages = final.lib.filterAttrs (n: _: final.lib.all (b: n != b) bootPkgNames)
             #         original.packages;
             #     }
-            #  else original;
+            else original;
 
         # Create a Haskell package set based on a Stack configuration.
         mkStackPkgSet =
