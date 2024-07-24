@@ -28,10 +28,10 @@ let
         # pointing back to the same static-nix-tools derivation. This allows
         # downstram derivation to keep using `nix-tools.exes.make-install-plan`
         # as shown above.
-        static-nix-tools' = pins:
+        static-nix-tools =
           let
             # TODO replace once haskell-nix-examples nix-tools is in haskell.nix
-            zipFile = (import pins final).${final.stdenv.hostPlatform.system};
+            zipFile = (import final.haskell-nix.sources.nix-tools-static final).${final.system};
             tarball = final.runCommand "nix-tools" {
               nativeBuildInputs = [ final.unzip ];
             } ''
@@ -44,17 +44,10 @@ let
             # add the missing exes attributes to the tarball derivation
             tarball // { exes = final.lib.genAttrs nix-tools-provided-exes (_: tarball); };
 
-        static-nix-tools = static-nix-tools' ../nix-tools-static.nix;
-        # Any change to default-setup requires rebuilding everthing.
-        # Having a dedicated file for `default-setup` allows us to update
-        # the other `nix-tools` (like `make-install-plan`), without a
-        # full rebuild.
-        static-nix-tools-for-default-setup = static-nix-tools' ../nix-tools-static-for-default-setup.nix;
-
         # Version of nix-tools built with a pinned version of haskell.nix.
-        pinned-nix-tools-lib = (import final.haskell-nix.sources.flake-compat {
+        pinned-nix-tools-lib = (import (final.haskell-nix.sources.flake-compat) {
             pkgs = final;
-            inherit (final.stdenv.hostPlatform) system;
+            inherit (final) system;
             src = ../nix-tools;
             override-inputs = {
               # Avoid downloading another `hackage.nix`.
@@ -67,20 +60,18 @@ let
           prev.haskell-nix // {
             inherit (nix-tools-pkgs) nix-tools nix-tools-set;
             # either nix-tools from its overlay or from the tarball.
-            nix-tools-unchecked = static-nix-tools // {
-              exes =  static-nix-tools.exes // {
-                inherit (static-nix-tools-for-default-setup.exes) default-setup default-setup-ghcjs;
-              };
-            };
+            nix-tools-unchecked = static-nix-tools;
           };
         # For use building hadrian.  This way updating anything that modifies the
         # way hadrian is built will not cause a GHC rebuild.
-        pinned-haskell-nix = pinned-nix-tools-lib.haskell-nix final.stdenv.hostPlatform.system;
+        pinned-haskell-nix = pinned-nix-tools-lib.haskell-nix final.system;
       });
 
     bootstrap = import ./bootstrap.nix;
     compiler-llvm = import ./compiler-llvm.nix;
+    ghc = import ./ghc.nix;
     ghc-packages = import ./ghc-packages.nix;
+    hydra = import ./hydra.nix { inherit sources; };
     darwin = import ./darwin.nix;
     windows = import ./windows.nix;
     armv6l-linux = import ./armv6l-linux.nix;
@@ -94,9 +85,9 @@ let
     ghcjs = import ./ghcjs.nix;
     cabalPkgConfig = import ./cabal-pkg-config.nix;
     cacheCompilerDeps = import ./cache-compiler-deps.nix;
-    lazy-inputs = import ../lazy-inputs;
-    rcodesign = import ./rcodesign.nix;
-    wasm = import ./wasm.nix;
+    default-setup = import ./default-setup.nix;
+    dummy-ghc-data = import ./dummy-ghc-data.nix;
+    fetch-source = import ./fetch-source.nix;
   };
 
   composeExtensions = f: g: final: prev:
@@ -118,6 +109,7 @@ let
     nix-tools
     bootstrap
     compiler-llvm
+    # ghc
     ghc-packages
     darwin
     windows
@@ -131,12 +123,13 @@ let
     cabalPkgConfig
     gobject-introspection
     hix
-    wasm
+    hydra
     # Restore nixpkgs haskell and haskellPackages
     (_: prev: { inherit (prev.haskell-nix-prev) haskell haskellPackages; })
+    dummy-ghc-data
     cacheCompilerDeps
-    lazy-inputs
-    rcodesign
+    default-setup
+    fetch-source
   ];
   combined = builtins.foldl' composeExtensions (_: _: { }) ordered;
 in overlays // { inherit combined; }

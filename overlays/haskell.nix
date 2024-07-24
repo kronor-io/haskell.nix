@@ -88,15 +88,14 @@ final: prev: {
         # "ghc8102-experimental").
         excludeBootPackages = compiler-nix-name: pkg-def: hackage:
           let original = pkg-def hackage;
-              bootPkgNames = final.lib.attrNames
-                final.ghc-boot-packages.${
-                  if compiler-nix-name != null
-                    then compiler-nix-name
-                    else (pkg-def hackage).compiler.nix-name};
-          in original // {
-            packages = final.lib.filterAttrs (n: _: final.lib.all (b: n != b) bootPkgNames)
-              original.packages;
-          };
+          in if builtins.hasAttr "ghc" original.packages then
+            original // {
+              packages = original.packages // final.lib.mapAttrs
+                (_: value: { revision = value; })
+                (builtins.intersectAttrs original.packages
+                  final.ghc-boot-packages-unchecked.${compiler-nix-name});
+            }
+          else original;
 
         # Create a Haskell package set based on a Stack configuration.
         mkStackPkgSet =
@@ -148,7 +147,8 @@ final: prev: {
                   if compiler-nix-name != null
                     then compiler-nix-name
                     else ((plan-pkgs.extras hackage).compiler or (plan-pkgs.pkgs hackage).compiler).nix-name;
-                pkg-def = excludeBootPackages compiler-nix-name plan-pkgs.pkgs;
+                # pkg-def = excludeBootPackages compiler-nix-name plan-pkgs.pkgs;
+                pkg-def = plan-pkgs.pkgs;
                 patchesModule = ghcHackagePatches.${compiler-nix-name'} or {};
                 package.compiler-nix-name.version = (compilerSelection final.buildPackages).${compiler-nix-name'}.version;
                 withMsg = final.lib.assertMsg;

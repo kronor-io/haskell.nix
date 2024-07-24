@@ -53,7 +53,7 @@ in
 
   options.reinstallableLibGhc = lib.mkOption {
     type = lib.types.bool;
-    default = !pkgs.stdenv.hostPlatform.isGhcjs;
+    default = false;
     description = "Is lib:ghc reinstallable?";
   };
   options.setup-depends = lib.mkOption {
@@ -133,7 +133,7 @@ in
   };
 
   config.bootPkgs =  [
-      "rts" "ghc-boot-th"
+      "rts" "ghc-boot-th" "ghc-boot" "ghc-heap" "ghci"
       "ghcjs-prim"
    ] ++ lib.optional (!config.reinstallableLibGhc) "ghc"
     ++ lib.optionals (
