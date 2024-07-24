@@ -155,7 +155,8 @@ final: prev: {
                   if compiler-nix-name != null
                     then compiler-nix-name
                     else ((plan-pkgs.extras hackage).compiler or (plan-pkgs.pkgs hackage).compiler).nix-name;
-                pkg-def = excludeBootPackages compiler-nix-name plan-pkgs.pkgs;
+                # pkg-def = excludeBootPackages compiler-nix-name plan-pkgs.pkgs;
+                pkg-def = plan-pkgs.pkgs;
                 patchesModule = ghcHackagePatches.${compiler-nix-name'} or {};
                 package.compiler-nix-name.version = (compilerSelection final.buildPackages).${compiler-nix-name'}.version;
                 plan.compiler-nix-name.version = (compilerSelection final.buildPackages).${(plan-pkgs.pkgs hackage).compiler.nix-name}.version;

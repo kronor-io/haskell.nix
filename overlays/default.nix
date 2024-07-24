@@ -110,7 +110,7 @@ let
     bootstrap
     compiler-llvm
     # ghc
-    ghc-packages
+    # ghc-packages
     darwin
     windows
     armv6l-linux

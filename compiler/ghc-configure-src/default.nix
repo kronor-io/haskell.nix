@@ -75,6 +75,7 @@ let self =
 , src-spec
 , ghc-patches ? []
 , hadrian
+, ghc
 
 # extra values we want to have available as passthru values.
 , extra-passthru ? {}
@@ -421,7 +422,8 @@ stdenv.mkDerivation (rec {
   dontAddExtraLibs = true;
 
   nativeBuildInputs = [
-    perl autoconf automake m4 python3 sphinx
+    perl autoconf automake m4 python3 sphinx autoreconfHook
+    ghc
   ] ++ lib.optional (patches != []) autoreconfHook;
 
   # For building runtime libs

@@ -26,7 +26,7 @@ in {
     resolve-compiler-name = name: final.haskell-nix.compilerNameMap.${name} or name;
     # Use this to disable the existing haskell infra structure for testing purposes
     compiler = {
-      ghc982 = final.haskell.compiler.ghc982.overrideAttrs (prevAttrs: rec {
+      ghc982 = final.haskell.compiler.ghc982.overrideAttrs (prevAttrs: {
         passthru = prevAttrs.passthru // {
           configured-src =
             (final.callPackage ../compiler/ghc-configure-src ({
@@ -38,7 +38,8 @@ in {
                     url = "https://downloads.haskell.org/~ghc/${version}/ghc-${version}-src.tar.xz";
                     sha256 = "sha256-4vt6fddGEjfSLoNlqD7dnhp30uFdBF85RTloRah3gck=";
                 };
-                hadrian = prevAttrs.hadrian;
+                hadrian = prevAttrs.passthru.hadrian;
+                ghc = final.haskell.compiler.ghc982;
             })).passthru.configured-src;
         };
       });

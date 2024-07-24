@@ -141,48 +141,48 @@ in rec {
   ghc-boot-packages-src-and-nix = builtins.mapAttrs
     (ghcName: ghc: builtins.mapAttrs
       (pkgName: subDir: rec {
-        src =
-          # TODO remove once nix >=2.4 is widely adopted (will trigger rebuilds of everything).
-          # See https://github.com/input-output-hk/haskell.nix/issues/1459
-          let nix24srcFix = src: src // { filterPath = { path, ... }: path; };
-          # Add in the generated files needed by ghc-boot
-          in if subDir == "libraries/ghc-boot"
-            then nix24srcFix (final.buildPackages.runCommand "ghc-boot-src" { nativeBuildInputs = [final.buildPackages.xorg.lndir]; } ''
-              mkdir $out
-              lndir -silent ${ghc.passthru.configured-src}/${subDir} $out
-              lndir -silent ${ghc.generated}/libraries/ghc-boot/dist-install/build/GHC $out/GHC
-            '')
-          else if subDir == "compiler"
-            then final.haskell-nix.haskellLib.cleanSourceWith {
-              src = nix24srcFix (final.buildPackages.runCommand "ghc-src" { nativeBuildInputs = [final.buildPackages.xorg.lndir]; } ''
-                mkdir $out
-                lndir -silent ${ghc.passthru.configured-src} $out
-                if [[ -f ${ghc.generated}/libraries/ghc-boot/dist-install/build/GHC/Version.hs ]]; then
-                  ln -s ${ghc.generated}/libraries/ghc-boot/dist-install/build/GHC/Version.hs $out/libraries/ghc-boot/GHC
-                fi
-                if [[ -f ${ghc.generated}/libraries/ghc-boot/dist-install/build/GHC/Platform/Host.hs ]]; then
-                  ln -s ${ghc.generated}/libraries/ghc-boot/dist-install/build/GHC/Platform/Host.hs $out/libraries/ghc-boot/GHC/Platform
-                fi
-                if [[ -f ${ghc.generated}/compiler/stage2/build/Config.hs ]]; then
-                  ln -s ${ghc.generated}/compiler/stage2/build/Config.hs $out/compiler
-                fi
-                if [[ -f ${ghc.generated}/compiler/stage2/build/GHC/Platform/Constants.hs ]]; then
-                  ln -s ${ghc.generated}/compiler/stage2/build/GHC/Platform/Constants.hs $out/compiler/GHC/Platform
-                fi
-                if [[ -f ${ghc.generated}/compiler/stage2/build/GHC/Settings/Config.hs ]]; then
-                  ln -s ${ghc.generated}/compiler/stage2/build/GHC/Settings/Config.hs $out/compiler/GHC/Settings
-                fi
-                if [[ -f ${ghc.generated}/compiler/GHC/CmmToLlvm/Version/Bounds.hs ]]; then
-                  ln -s ${ghc.generated}/compiler/GHC/CmmToLlvm/Version/Bounds.hs $out/compiler/GHC/CmmToLlvm/Version
-                fi
-                ln -s ${ghc.generated}/includes/dist-derivedconstants/header/* $out/compiler
-                ln -s ${ghc.generated}/compiler/stage2/build/*.hs-incl $out/compiler
-              '');
-              inherit subDir;
-              includeSiblings = true;
-            }
-            else "${ghc.passthru.configured-src}/${subDir}";
-        nix = callCabal2Nix ghcName "${ghcName}-${pkgName}" src;
+        src = null;
+          # # TODO remove once nix >=2.4 is widely adopted (will trigger rebuilds of everything).
+          # # See https://github.com/input-output-hk/haskell.nix/issues/1459
+          # let nix24srcFix = src: src // { filterPath = { path, ... }: path; };
+          # # Add in the generated files needed by ghc-boot
+          # in if subDir == "libraries/ghc-boot"
+          #   then nix24srcFix (final.buildPackages.runCommand "ghc-boot-src" { nativeBuildInputs = [final.buildPackages.xorg.lndir]; } ''
+          #     mkdir $out
+          #     lndir -silent ${ghc.passthru.configured-src}/${subDir} $out
+          #     lndir -silent ${ghc.generated}/libraries/ghc-boot/dist-install/build/GHC $out/GHC
+          #   '')
+          # else if subDir == "compiler"
+          #   then final.haskell-nix.haskellLib.cleanSourceWith {
+          #     src = nix24srcFix (final.buildPackages.runCommand "ghc-src" { nativeBuildInputs = [final.buildPackages.xorg.lndir]; } ''
+          #       mkdir $out
+          #       lndir -silent ${ghc.passthru.configured-src} $out
+          #       if [[ -f ${ghc.generated}/libraries/ghc-boot/dist-install/build/GHC/Version.hs ]]; then
+          #         ln -s ${ghc.generated}/libraries/ghc-boot/dist-install/build/GHC/Version.hs $out/libraries/ghc-boot/GHC
+          #       fi
+          #       if [[ -f ${ghc.generated}/libraries/ghc-boot/dist-install/build/GHC/Platform/Host.hs ]]; then
+          #         ln -s ${ghc.generated}/libraries/ghc-boot/dist-install/build/GHC/Platform/Host.hs $out/libraries/ghc-boot/GHC/Platform
+          #       fi
+          #       if [[ -f ${ghc.generated}/compiler/stage2/build/Config.hs ]]; then
+          #         ln -s ${ghc.generated}/compiler/stage2/build/Config.hs $out/compiler
+          #       fi
+          #       if [[ -f ${ghc.generated}/compiler/stage2/build/GHC/Platform/Constants.hs ]]; then
+          #         ln -s ${ghc.generated}/compiler/stage2/build/GHC/Platform/Constants.hs $out/compiler/GHC/Platform
+          #       fi
+          #       if [[ -f ${ghc.generated}/compiler/stage2/build/GHC/Settings/Config.hs ]]; then
+          #         ln -s ${ghc.generated}/compiler/stage2/build/GHC/Settings/Config.hs $out/compiler/GHC/Settings
+          #       fi
+          #       if [[ -f ${ghc.generated}/compiler/GHC/CmmToLlvm/Version/Bounds.hs ]]; then
+          #         ln -s ${ghc.generated}/compiler/GHC/CmmToLlvm/Version/Bounds.hs $out/compiler/GHC/CmmToLlvm/Version
+          #       fi
+          #       ln -s ${ghc.generated}/includes/dist-derivedconstants/header/* $out/compiler
+          #       ln -s ${ghc.generated}/compiler/stage2/build/*.hs-incl $out/compiler
+          #     '');
+          #     inherit subDir;
+          #     includeSiblings = true;
+          #   }
+          #   else "${ghc.passthru.configured-src}/${subDir}";
+        nix = null; # callCabal2Nix ghcName "${ghcName}-${pkgName}" src;
       }) (ghc-extra-pkgs ghc.version))
     final.buildPackages.haskell-nix.compiler;
 
@@ -195,6 +195,121 @@ in rec {
     (combineAndMaterialize true ../materialized)
       ghc-boot-packages-src-and-nix;
 
+  corePackagesMap = {
+      "base" = _ : {
+        package = {
+          identifier = {
+            name = "base";
+            version = "4.19.1.0";
+          };
+        };
+      };
+    # "bytestring" = _: {
+    #     package = {
+    #       identifier = {
+    #         name = "bytestring";
+    #         version = "0.12.1.0";
+    #       };
+    #     };
+    #   };
+    # "deepseq" = _: {
+    #     package = {
+    #       identifier = {
+    #         name = "deepseq";
+    #         version = "1.5.0.0";
+    #       };
+    #     };
+    #   };
+    # "ghc" = _: {
+    #     package = {
+    #       identifier = {
+    #         name = "ghc";
+    #         version = "9.8.2";
+    #       };
+    #     };
+    #   };
+    "ghc-bignum" = _: {
+        package = {
+          identifier = {
+            name = "ghc-bignum";
+            version = "1.3";
+          };
+        };
+      };
+    "ghc-boot" = _: {
+        package = {
+          identifier = {
+            name = "ghc-boot";
+            version = "9.8.2";
+          };
+        };
+      };
+    "ghc-heap" = _: {
+        package = {
+          identifier = {
+            name = "ghc-heap";
+            version = "9.8.2";
+          };
+        };
+      };
+    "ghc-prim" = _: {
+        package = {
+          identifier = {
+            name = "ghc-prim";
+            version = "9.8.2";
+          };
+        };
+      };
+    "ghci" = _: {
+        package = {
+          identifier = {
+            name = "ghci";
+            version = "9.8.2";
+          };
+        };
+      };
+    "hpc" = _: {
+        package = {
+          identifier = {
+            name = "hpc";
+            version = "0.7.0.0";
+          };
+        };
+      };
+    "integer-gmp" = _: {
+        package = {
+          identifier = {
+            name = "integer-gmp";
+            version = "1.1";
+          };
+        };
+      };
+    # "parsec" = _: {
+    #     package = {
+    #       identifier = {
+    #         name = "parsec";
+    #         version = "3.1.17.0";
+    #       };
+    #     };
+    #   };
+    # "pretty" = _: {
+    #     package = {
+    #       identifier = {
+    #         name = "pretty";
+    #         version = "1.1.3.6";
+    #       };
+    #     };
+    #   };
+    # "template-haskell" = _: {
+    #     package = {
+    #       identifier = {
+    #         name = "template-haskell";
+    #         version = "2.21.0.0";
+    #       };
+    #     };
+    #   };
+  };
+
   # The import nix results for each ghc boot package for each ghc.
   ghc-boot-packages = builtins.mapAttrs
     (ghcName: value: builtins.mapAttrs
@@ -205,11 +320,12 @@ in rec {
         ghc-boot-packages-src-and-nix;
 
   ghc-boot-packages-unchecked = builtins.mapAttrs
-    (ghcName: value: builtins.mapAttrs
-      (pkgName: srcAndNix: importSrcAndNix {
-        inherit (srcAndNix) src;
-        nix = final.ghc-boot-packages-nix-unchecked.${ghcName} + "/${pkgName}.nix";
-      }) value)
+    (ghcName: value: {})
+    # (ghcName: value: builtins.mapAttrs (_: _ : {}) value)
+  #     (pkgName: srcAndNix: importSrcAndNix {
+  #       inherit (srcAndNix) src;
+  #       nix = final.ghc-boot-packages-nix-unchecked.${ghcName} + "/${pkgName}.nix";
+  #     }) value)
         ghc-boot-packages-src-and-nix;
 
   # Derivation with cabal.project for use with `cabalProject'` for each ghc.
