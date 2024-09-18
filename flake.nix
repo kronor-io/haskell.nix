@@ -74,6 +74,13 @@
           overlays = [ self.overlay ];
           localSystem = { inherit system; };
         });
+
+      apps = forEachSystemPkgs (pkgs:
+        builtins.mapAttrs (name: exe: {
+          type = "app";
+          program = exe + "/bin/${name}";
+        }) pkgs.haskell-nix.nix-tools.exes
+      );
     };
 
   # --- Flake Local Nix Configuration ----------------------------
