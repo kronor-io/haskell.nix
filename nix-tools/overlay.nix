@@ -1,96 +1,51 @@
-final: _prev:
-
+{ hackage-db-src ? null}:
 let
-  compiler-nix-name = "ghc982";
 
-  nix-tools = nix-tools-set {
-    nix-tools = nix-tools-unchecked;
-  };
+  compiler = "ghc981";
 
-  nix-tools-unchecked = nix-tools-set {};
-
-  nix-tools-eval-on-linux = nix-tools-set {
-    evalSystem = "x86_64-linux";
-  };
-
-  nix-tools-set = args:
-    let
-      project = final.haskell-nix.cabalProject'
-        [
-          {
-            name = "nix-tools";
-            src = ./.;
-
-            compiler-nix-name = final.lib.mkDefault compiler-nix-name;
-            # compilerSelection = p: p.haskell.compiler;
-
-            # tests need to fetch hackage
-            configureArgs = final.lib.mkDefault "--disable-tests";
-
-            # See ./cabal-install-patches.nix for why this patch is
-            # needed.  Applied here for the regular nix-tools build,
-            # and again from `static/project.nix` for the static build.
-            modules = [ ./cabal-install-patches.nix ];
-
-            # Tools to include in the development shell
-            shell.tools.cabal = {};
-            shell.tools.haskell-language-server = {};
-            shell.buildInputs = [ final.git ];
-          }
-          args
-        ];
-
-      # pick the version from the nix-tools cabal package, not that it really matters ...
-      name = "nix-tools-${project.hsPkgs.nix-tools.identifier.version}";
-
-      exes = {
-        inherit (project.hsPkgs.cabal-install.components.exes)
-          cabal;
-
-        inherit (project.hsPkgs.nix-tools.components.exes)
-          cabal-name
-          cabal-to-nix
-          default-setup
-          default-setup-ghcjs
-          hackage-to-nix
-          hashes-to-nix
-          lts-to-nix
-          make-install-plan
-          plan-to-nix
-          stack-repos
-          stack-to-nix
-          truncate-index;
-
-        inherit (project.hsPkgs.hpack.components.exes)
-          hpack;
-
-        inherit (project.hsPkgs.Cabal-syntax-json.components.exes)
-          cabal2json;
-      };
-
-      warning = final.lib.mapAttrs
-        (_: _:
-          final.lib.warn
-            ''
-              The package nix-tools is now compiled with a single GHC version.
-              You can use the function nix-tools-set to compile nix-tools using a specific compiler:
-
-                nix-tools-set { compiler-nix-name = " "ghcXYZ" "; }
-            ''
-            toolset
-        )
-        final.haskell-nix.compiler;
-
-      toolset = final.buildPackages.symlinkJoin {
-        inherit name;
-        paths = builtins.attrValues exes;
-        buildInputs = [ final.buildPackages.makeWrapper ];
-        meta.platforms = final.lib.platforms.all;
-        passthru = { inherit project exes; };
-      };
-    in
-    toolset // warning;
 in
-{
-  inherit nix-tools nix-tools-unchecked nix-tools-eval-on-linux nix-tools-set;
-}
+
+final: prev: {
+        haskell = prev.haskell // {
+          packages = prev.haskell.packages // {
+            "${compiler}" = prev.haskell.packages."${compiler}".override
+              (old: {
+                overrides = final.lib.fold final.lib.composeExtensions
+                  (old.overrides or (_: _: { })) [
+                    (hfinal: hprev:
+                      let
+                        fetchFromHackage = pname: version: hash:
+                          hfinal.callHackageDirect {
+                            pkg = pname;
+                            ver = version;
+                            sha256 = hash;
+                          };
+                        ps-cabal-install-solver = (fetchFromHackage "cabal-install-solver" "3.10.2.1" "sha256-wNwp42fiEketjcKJwhv5etP5/bVGlDitnMryTLX+Z74=") {};
+                        ps-cabal-install = (fetchFromHackage "cabal-install" "3.10.2.1" "sha256-encWM587n+atIrbjHaNjNeavBoxmMsI1QXDS5AtOLoo=") {Cabal-described = null; Cabal-QuickCheck = null; Cabal-tree-diff = null; cabal-install-solver = ps-cabal-install-solver;};
+                      in {
+                        ps-cabal-install = ps-cabal-install;
+                        ps-cabal-install-solver = ps-cabal-install-solver;
+                    })
+                    (hfinal: hprev:
+                      {
+                        nix-tools = final.haskell.lib.dontCheck (final.haskell.lib.markUnbroken (hfinal.callCabal2nix "nix-tools" ./nix-tools {
+                          cabal-install = hfinal.ps-cabal-install;
+                          cabal-install-solver = hfinal.ps-cabal-install-solver;
+                        }));
+
+                        hackage-db =
+                          let
+                            hackage-db-git = if hackage-db-src == null then final.fetchgit {
+                              url = "https://github.com/michaelpj/hackage-db.git";
+                              rev = "83f819cb08742d3c86a83b407d45c1f6c1c7e299";
+                              sha256 = "sha256-8NTfSb1fE/so843qG59XpvPE2HIYTa0D1UrpnHdJ44U=";
+                            }
+                            else hackage-db-src;
+
+                          in hfinal.callCabal2nix "hackage-db" hackage-db-git {};
+                    })
+                  ];
+              });
+          };
+        };
+      }
