@@ -1,82 +1,74 @@
 {
-  inputs.nixpkgs.follows = "haskellNix/nixpkgs";
-  inputs.haskellNix.url = "github:kronor-io/haskell.nix/wip-nixpkgs-ghc";
+  description = "Flake for building nix-tools with nixpkgs infra";
 
-  outputs = { self, nixpkgs, haskellNix, ... }:
+  inputs.nixpkgs.follows = "nixpkgs-2405";
+  inputs.nixpkgs-2405.url = "github:NixOS/nixpkgs/release-24.05";
+
+  inputs.hackage-db.url = "github:michaelpj/hackage-db/83f819cb08742d3c86a83b407d45c1f6c1c7e299";
+  inputs.hackage-db.flake = false;
+
+  outputs = { self, nixpkgs, ... }@inputs:
     let
       systems = [
         "x86_64-linux"
-        "x86_64-darwin"
         "aarch64-linux"
         "aarch64-darwin"
       ];
 
-      inherit (nixpkgs) lib;
+      compiler = "ghc981";
+
+      nix-tools-overlays = final: prev: {
+        haskell = prev.haskell // {
+          packages = prev.haskell.packages // {
+            "${compiler}" = prev.haskell.packages."${compiler}".override
+              (old: {
+                overrides = final.lib.fold final.lib.composeExtensions
+                  (old.overrides or (_: _: { })) [
+                    (hfinal: hprev:
+                      let
+                        fetchFromHackage = pname: version: hash:
+                          hfinal.callHackageDirect {
+                            pkg = pname;
+                            ver = version;
+                            sha256 = hash;
+                          };
+                        ps-cabal-install-solver = (fetchFromHackage "cabal-install-solver" "3.10.2.1" "sha256-wNwp42fiEketjcKJwhv5etP5/bVGlDitnMryTLX+Z74=") {};
+                        ps-cabal-install = (fetchFromHackage "cabal-install" "3.10.2.1" "sha256-encWM587n+atIrbjHaNjNeavBoxmMsI1QXDS5AtOLoo=") {Cabal-described = null; Cabal-QuickCheck = null; Cabal-tree-diff = null; cabal-install-solver = ps-cabal-install-solver;};
+                      in {
+                        ps-cabal-install = ps-cabal-install;
+                        ps-cabal-install-solver = ps-cabal-install-solver;
+                    })
+                    (hfinal: hprev:
+                      {
+                        nix-tools = final.haskell.lib.dontCheck (final.haskell.lib.markUnbroken (hfinal.callCabal2nix "nix-tools" ./nix-tools {
+                          cabal-install = hfinal.ps-cabal-install;
+                          cabal-install-solver = hfinal.ps-cabal-install-solver;
+                        }));
+
+                        hackage-db = hfinal.callCabal2nix "hackage-db" "${inputs.hackage-db}" {};
+                    })
+                  ];
+              });
+          };
+        };
+      };
 
       # keep it simple (from https://ayats.org/blog/no-flake-utils/)
       forAllSystems = f:
         nixpkgs.lib.genAttrs systems (system:
-          f (haskellNix.legacyPackages.${system}.extend self.overlays.default));
+          f (import nixpkgs {
+            inherit system;
+            overlays = [
+              nix-tools-overlays
+            ];
+          }));
 
-      mkTarball = pkgs:
-        let
-          toolset =
-            let pkgs' = pkgs.extend self.overlays.default; in
-            # We need to use haskell.nix compilers here
-            pkgs'.nix-tools-set { compilerSelection = lib.mkForce (p: p.haskell-nix.compiler); };
-
-          # tarball filename e.g. nix-tools-0.1.0.0-x86_64-unknown-linux-musl.tar.gz
-          tarball-filename = "${toolset.name}-${pkgs.hostPlatform.config}.tar.gz";
-        in
-        pkgs.runCommand tarball-filename
-          { preferLocalBuild = true; }
-          ''
-            mkdir -p ${toolset.name}/bin
-            cp --verbose --target-directory ${toolset.name}/bin ${toolset}/bin/*
-
-            mkdir -p $out
-            tar cvzf $out/${tarball-filename} ${toolset.name}
-
-            mkdir -p $out/nix-support
-            echo "file binary-dist $out/${tarball-filename}" >> $out/nix-support/hydra-build-products
-          '';
     in
     {
-      # this is not per-system!
-      overlays.default = import ./overlay.nix;
-
-      legacyPackages = forAllSystems (pkgs: pkgs);
-
-      lib = {
-        nix-tools = system: (haskellNix.legacyPackages.${system}.extend self.overlays.default).nix-tools;
-        haskell-nix = system: (haskellNix.legacyPackages.${system}.extend self.overlays.default).haskell-nix;
-      };
-      project = forAllSystems (pkgs: pkgs.nix-tools.project);
-
       packages = forAllSystems (pkgs:
-        lib.mapAttrs'
-          (_n: v: { name = v.exeName; value = v; })
-          pkgs.nix-tools.project.flake'.packages);
-
-      checks = forAllSystems (pkgs:
-        pkgs.nix-tools.project.flake'.checks // {
-          truncate-index = import ./tests/truncate-index.nix { inherit pkgs; };
+        {
+          nix-tools = pkgs.haskell.packages.ghc981.nix-tools;
         });
-
-      devShells = forAllSystems (pkgs:
-        { default = pkgs.nix-tools.project.shell; });
-
-      hydraJobs = forAllSystems
-        (pkgs:
-          # project's hydraJobs
-          pkgs.nix-tools.project.flake'.hydraJobs
-          # tarballs with static builds.
-          // lib.optionalAttrs (pkgs.buildPlatform.system == "x86_64-linux")
-            { binary-tarball = mkTarball pkgs.pkgsCross.musl64; }
-          # aarch64-multiplatform-musl cross compile is currently broken
-          # // lib.optionalAttrs (pkgs.buildPlatform.system == "aarch64-linux")
-          #   { binary-tarball = mkTarball pkgs.pkgsCross.aarch64-multiplatform-musl; }
-        );
     };
 
   nixConfig = {
