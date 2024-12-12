@@ -364,6 +364,13 @@ let
     '';
   };
 
+  cabalDir = dotCabal {
+        inherit cabal-install nix-tools extra-hackage-tarballs;
+        extra-hackage-repos = fixedProject.repos;
+        index-state = cached-index-state;
+        sha256 = index-sha256-found;
+      };
+
   plan-nix = materialize ({
     inherit materialized;
     sha256 = plan-sha256;
@@ -450,12 +457,7 @@ let
       # been at the time `cached-index-state`.  We may include
       # some packages that will be excluded by `index-state-max`
       # which is used by cabal (cached-index-state >= index-state-max).
-      dotCabal {
-        inherit cabal-install nix-tools extra-hackage-tarballs;
-        extra-hackage-repos = fixedProject.repos;
-        index-state = cached-index-state;
-        sha256 = index-sha256-found;
-      }
+      cabalDir
     } make-install-plan ${
           # Setting the desired `index-state` here in case it is not
           # in the cabal.project file. This will further restrict the
@@ -525,6 +527,6 @@ let
   '');
 in {
   projectNix = plan-nix;
-  inherit index-state-max src;
+  inherit index-state-max src cabalDir;
   inherit (fixedProject) sourceRepos extra-hackages;
 }

@@ -697,7 +697,7 @@ final: prev: {
                   inherit options;
                   args = config;
                   plan-nix = callProjectResults.projectNix;
-                  inherit (callProjectResults) index-state-max;
+                  inherit (callProjectResults) index-state-max cabalDir;
                   tool = final.buildPackages.haskell-nix.tool' evalPackages pkg-set.config.compiler.nix-name;
                   tools = final.buildPackages.haskell-nix.tools' evalPackages pkg-set.config.compiler.nix-name;
                   roots = final.haskell-nix.roots pkg-set.config.compiler.nix-name;
