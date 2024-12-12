@@ -31,7 +31,7 @@ final: prev: {
         # ghc hackage patches.
         # these are patches that turn hackage packages into the same as the ones
         # ghc ships with the supposedly same version. See GHC Track Issue: 16199
-        ghcHackagePatches = import ../patches;
+        # ghcHackagePatches = import ../patches;
 
         compat = import ../lib/compat.nix;
 
@@ -157,7 +157,6 @@ final: prev: {
                     else ((plan-pkgs.extras hackage).compiler or (plan-pkgs.pkgs hackage).compiler).nix-name;
                 # pkg-def = excludeBootPackages compiler-nix-name plan-pkgs.pkgs;
                 pkg-def = plan-pkgs.pkgs;
-                patchesModule = ghcHackagePatches.${compiler-nix-name'} or {};
                 package.compiler-nix-name.version = (compilerSelection final.buildPackages).${compiler-nix-name'}.version;
                 plan.compiler-nix-name.version = (compilerSelection final.buildPackages).${(plan-pkgs.pkgs hackage).compiler.nix-name}.version;
                 withMsg = final.lib.assertMsg;
@@ -180,7 +179,7 @@ final: prev: {
                              ++ pkg-def-extras;
                 # set doExactConfig = true, as we trust cabals resolution for
                 # the plan.
-                modules = [ { doExactConfig = true; } patchesModule ]
+                modules = [ { doExactConfig = true; } ]
                        ++ modules
                        ++ plan-pkgs.modules or [];
                 inherit extra-hackages;
@@ -246,11 +245,11 @@ final: prev: {
           })
         ];
 
-        dotCabal = { index-state, sha256, cabal-install, extra-hackage-tarballs ? {}, extra-hackage-repos ? {}, nix-tools, ... }:
+        dotCabal = { index-state, sha256, extra-hackage-tarballs ? {}, extra-hackage-repos ? {}, nix-tools, ... }:
             let
               # NOTE: root-keys: aaa is because key-threshold: 0 does not seem to be enough by itself
               bootstrapIndexTarball = name: index: final.runCommand "cabal-bootstrap-index-tarball-${name}" {
-                nativeBuildInputs = [ cabal-install ] ++ cabal-issue-8352-workaround;
+                nativeBuildInputs = [ nix-tools.exes.cabal ];
               } ''
                 HOME=$(mktemp -d)
                 mkdir -p $HOME/.cabal/packages/${name}
@@ -272,7 +271,7 @@ final: prev: {
                   name = "01-index.tar.gz-at-${builtins.replaceStrings [ ":" ] [ "" ] index-state}";
                   url = "https://hackage.haskell.org/01-index.tar.gz";
                   downloadToTemp = true;
-                  postFetch = "${nix-tools}/bin/truncate-index -o $out -i $downloadedFile -s ${index-state}";
+                  postFetch = "${nix-tools.exes.truncate-index} -o $out -i $downloadedFile -s ${index-state}";
                   outputHashAlgo = "sha256";
                   outputHash = sha256;
                 });
@@ -420,7 +419,7 @@ final: prev: {
               # -----------------------+---------------+------------+
               #
               final.runCommand "dot-cabal" {
-                nativeBuildInputs = [ cabal-install final.xorg.lndir ] ++ cabal-issue-8352-workaround;
+                nativeBuildInputs = [ nix-tools.exes.cabal final.xorg.lndir ];
               } ''
                 # prepopulate hackage
                 mkdir -p $out/packages/hackage.haskell.org

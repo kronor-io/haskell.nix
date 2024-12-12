@@ -73,7 +73,7 @@ let
   # nix module system for `nix-tools-unchecked` and `cabal-install-unchecked`.
   nix-tools = if args.nix-tools or null != null
     then args.nix-tools
-    else evalPackages.haskell-nix.nix-tools-unchecked;
+    else evalPackages.haskell-nix.nix-tools;
   cabal-install = nix-tools.exes.cabal;
   forName = pkgs.lib.optionalString (name != null) (" for " + name);
   nameAndSuffix = suffix: if name == null then suffix else name + "-" + suffix;
@@ -423,7 +423,7 @@ let
           # without the source available (we cleanSourceWith'd it),
           # this may not produce the right result.
           if supportHpack
-            then '' 
+            then ''
               echo No .cabal file found, running hpack on $hpackFile
               hpack $hpackFile
             ''
@@ -451,7 +451,7 @@ let
       # some packages that will be excluded by `index-state-max`
       # which is used by cabal (cached-index-state >= index-state-max).
       dotCabal {
-        inherit cabal-install nix-tools extra-hackage-tarballs;
+        inherit nix-tools extra-hackage-tarballs;
         extra-hackage-repos = fixedProject.repos;
         index-state = cached-index-state;
         sha256 = index-sha256-found;
@@ -462,6 +462,7 @@ let
           # packages used by the solver (cached-index-state >= index-state-max).
           pkgs.lib.optionalString (index-state != null) "--index-state=${index-state}"
         } \
+        -v3 \
         -w ${
           # We are using `-w` rather than `--with-ghc` here to override
           # the `with-compiler:` in the `cabal.project` file.

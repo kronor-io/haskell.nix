@@ -22,6 +22,11 @@
       url = "github:haskell/cabal/3.6";
       flake = false;
     };
+
+    hackage-db = {
+      url = "github:michaelpj/hackage-db/83f819cb08742d3c86a83b407d45c1f6c1c7e299";
+      flake = false;
+    };
   };
 
   outputs =
