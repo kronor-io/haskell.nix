@@ -1,4 +1,4 @@
-{ pkgs, stdenv, lib, haskellLib, srcOnly }:
+{ pkgs, stdenv, lib, haskellLib, recurseIntoAttrs, srcOnly }:
 
 
 with haskellLib;
@@ -40,13 +40,9 @@ in {
   foldComponents = tys: f: z: conf:
     let
       comps = conf.components or { };
-      # The comment below used to claim we ensure `comps.library` is
-      # not null, but the check only looked at presence — null
-      # libraries (common on exe-only pseudo-pkg entries) would still
-      # be added to the fold and crash downstream consumers that
-      # assume non-null (e.g. `allComponent`'s `c.buildable` filter).
+      # ensure that comps.library exists and is not null.
       libComp = acc:
-        if (comps.library or null) != null then f comps.library acc else acc;
+        if comps ? library then f comps.library acc else acc;
       subComps = acc:
         lib.foldr
           (ty: acc': foldrAttrVals f acc' (comps.${ty} or { }))
@@ -99,7 +95,7 @@ in {
     || isBenchmark componentId;
   mayHaveExecutable = isExecutableType;
 
-  # Was there a reference to the package source in the `cabal.project` or `stack.yaml` file.
+  # Was there a reference to the package source in the `cabal.project`
   # This is used to make the default `packages` list for `shellFor`.
   isLocalPackage = p: p.isLocal or false;
   isRedirectPackage = p: p.isRedirect or false;
@@ -164,24 +160,15 @@ in {
     let packageToComponents = _name: package:
           # look for the components with this group if there are any
           let components = package.components.${group} or {};
-          in {
-            inherit (package.identifier) name;
-            # set recurseForDerivations unless it's a derivation itself (e.g. the "library" component) or an empty set
-            components =
-              if lib.isDerivation components || components == {}
-                then components
-                else lib.recurseIntoAttrs components;
-          };
+          # set recurseForDerivations unless it's a derivation itself (e.g. the "library" component) or an empty set
+          in if lib.isDerivation components || components == {}
+             then components
+             else recurseIntoAttrs components;
         packageFilter = _name: package: (package.isHaskell or false) && packageSel package;
         filteredPkgs = lib.filterAttrs packageFilter haskellPackages;
         # at this point we can filter out packages that don't have any of the given kind of component
-        packagesByComponent = lib.mapAttrsToList packageToComponents filteredPkgs;
-        packagesGroupedByName = builtins.groupBy (x: x.name) packagesByComponent;
-        combined =
-          lib.filterAttrs (_: components: components != {}) (
-            builtins.mapAttrs (_name: packages:
-              builtins.foldl' (a: b: a // b) {} (map (x: x.components) packages)) packagesGroupedByName);
-    in lib.recurseIntoAttrs combined;
+        packagesByComponent = lib.filterAttrs (_: components: components != {}) (lib.mapAttrs packageToComponents filteredPkgs);
+    in recurseIntoAttrs packagesByComponent;
 
   # Equivalent to collectComponents with (_: true) as selection function.
   # Useful for pre-filtered package-set.
@@ -197,7 +184,7 @@ in {
   # This can be used to collect all the test runs in your project, so that can be run in CI.
   collectChecks = packageSel: haskellPackages:
     let packageFilter = _name: package: (package.isHaskell or false) && packageSel package;
-    in lib.recurseIntoAttrs (lib.filterAttrs (_: x: x != {} && x != lib.recurseIntoAttrs {}) (lib.mapAttrs (_: p: p.checks) (lib.filterAttrs packageFilter haskellPackages)));
+    in recurseIntoAttrs (lib.mapAttrs (_: p: p.checks) (lib.filterAttrs packageFilter haskellPackages));
 
   # Equivalent to collectChecks with (_: true) as selection function.
   # Useful for pre-filtered package-set.
@@ -245,7 +232,7 @@ in {
   # Check a test component
   check = import ./check.nix {
     inherit stdenv lib haskellLib;
-    inherit (pkgs) pkgsBuildBuild;
+    inherit (pkgs) buildPackages;
   };
 
   # Do coverage of a package
@@ -269,9 +256,9 @@ in {
   isCrossTarget = stdenv.targetPlatform != stdenv.hostPlatform
     && !(stdenv.hostPlatform.isLinux && stdenv.targetPlatform.isMusl && stdenv.hostPlatform.linuxArch == stdenv.targetPlatform.linuxArch);
   # Native musl build-host-target combo
-  isNativeMusl = stdenv.targetPlatform.isMusl
-    && stdenv.buildPlatform.linuxArch == stdenv.hostPlatform.linuxArch
-    && stdenv.hostPlatform.linuxArch == stdenv.targetPlatform.linuxArch;
+  isNativeMusl = stdenv.hostPlatform.isMusl
+    && stdenv.buildPlatform == stdenv.hostPlatform
+    && stdenv.hostPlatform == stdenv.targetPlatform;
 
   # Takes a version number, module or list of modules (for cabalProject)
   # and converts it to an list of project modules.  This allows
@@ -282,11 +269,6 @@ in {
     else if lib.isList versionOrMod
       then versionOrMod
     else [versionOrMod];
-
-  # Find the resolver in the stack.yaml file and fetch it if a sha256 value is provided
-  fetchResolver = import ./fetch-resolver.nix {
-    inherit (pkgs.buildPackages) pkgs;
-  };
 
   inherit (import ./cabal-project-parser.nix {
     inherit pkgs;
@@ -330,13 +312,13 @@ in {
   };
 
   # Run evalModules passing the project function argument (m) as a module along with
-  # the a projectType module (../modules/cabal-project.nix or ../modules/stack-project.nix).
+  # the the a projectType module (../modules/cabal-project.nix).
   # The resulting config is then passed to the project function's implementation.
   evalProjectModule = projectType: m: f:
     let project = f
       (lib.evalModules {
         modules = (if builtins.isList m then m else [m]) ++ [
-          # Include ../modules/cabal-project.nix or ../modules/stack-project.nix
+          # Include ../modules/cabal-project.nix
           (import ../modules/project-common.nix)
           (import projectType)
           # Pass the pkgs and the buildProject to the modules
@@ -365,10 +347,8 @@ in {
     # `d` in the `nix` error should include the name
     # eg. `packages.Cabal.components.library`.
     if d ? components
-    then if d ? instantiations
-         then d.components.library.override { inherit (d) instantiations; }
-         else d.components.library
-    else d;
+      then d.components.library
+      else d;
 
   projectOverlays = import ./project-overlays.nix {
     inherit lib haskellLib;
@@ -477,7 +457,6 @@ in {
             ${component.passthru.identifier.component-id} = {
               type = "app";
               program = component.exePath;
-              inherit (component) meta;
             };
           })
           acc
@@ -525,10 +504,6 @@ in {
     # Build the plan-nix and check it if materialized
     // lib.optionalAttrs (checkedProject ? plan-nix) {
       inherit (checkedProject) plan-nix;
-    }
-    # Build the stack-nix and check it if materialized
-    // lib.optionalAttrs (checkedProject ? stack-nix) {
-      inherit (checkedProject) stack-nix;
     };
 
   mkFlake = project: {
@@ -567,7 +542,8 @@ in {
           ciJobs
           # Used by:
           #   `nix develop`
-          devShells;
+          devShells
+          devShell; # TODO remove devShell once everyone has nix that supports `devShells.default`
       };
 
   # Adapt a standard project shell (`project.shell` or `haskell-nix.shellFor`)
@@ -587,7 +563,7 @@ in {
         value = lib.makeSearchPath "lib/pkgconfig" shell.buildInputs;
       }
     ] ++ lib.mapAttrsToList lib.nameValuePair ({
-      inherit (shell) NIX_GHC NIX_GHCPKG NIX_GHC_LIBDIR NIX_GHC_DOCDIR;
+      inherit (shell) NIX_GHC_LIBDIR;
     # CABAL_CONFIG is only set if the shell was built with exactDeps=true
     } // lib.optionalAttrs (shell ? CABAL_CONFIG) {
       inherit (shell) CABAL_CONFIG;
@@ -596,6 +572,11 @@ in {
 
   makeCompilerDeps = import ./make-compiler-deps.nix {
     inherit (pkgs.buildPackages.buildPackages) lib runCommand;
+  };
+
+  makeDummyGhcData = import ./make-dummy-ghc-data.nix {
+    inherit pkgs;
+    inherit (pkgs.buildPackages.buildPackages) runCommand;
   };
 
   # Here we try to figure out which qemu to use based on the host platform.
@@ -608,82 +589,25 @@ in {
     then "arm"
     else if hostPlatform.isAarch64
     then "aarch64"
-    else if hostPlatform.isi686
-    then "i386"
     else abort "Don't know which QEMU to use for hostPlatform ${hostPlatform.config}. Please provide qemuSuffix";
 
   # How to run ldd when checking for static linking
   lddForTests = "${pkgs.pkgsBuildBuild.glibc.bin}/bin/ldd";
 
-  # Key used by `uniqueWithName` and `checkUnique` to partition lists.
-  # Derivations carry a name+version-encoded `.name`
-  # (e.g. `ghc984-conduit-1.3.5.0`).  haskell.nix package values
-  # don't -- they expose `.identifier.{name,version}` -- so we
-  # synthesize a key with a space separator rather than the
-  # derivation `"${name}-${version}"` shape, so a derivation key
-  # can never collide with a package key derived from the same
-  # words.  Items with neither share a bucket; correctness still
-  # holds via the inner `lib.unique`, just at a slower path.
-  #
-  # When an `identifier.unit-id` is present, it is appended to the
-  # key so two incarnations of `foo-1.2.3` with different inputs
-  # land in different buckets.  Items without a unit-id keep
-  # exactly the key they had before, so the lexicographic ordering
-  # `uniqueWithName` produces via `builtins.attrValues
-  # (groupBy ...)` is byte-stable.
-  uniqueWithNameKey = x:
-    if __typeOf x != "set" then "_notset"
-    else let
-      suffix = lib.optionalString
-        (x ? identifier.unit-id && x.identifier.unit-id != null)
-        " ${x.identifier.unit-id}";
-    in
-      if x ? name then x.name + suffix
-      else if x ? identifier.name
-        then "${x.identifier.name} ${x.identifier.version or ""}${suffix}"
-      else "_noname";
-
-  # Like `lib.unique`, but uses `uniqueWithNameKey` as a partition key so
-  # `lib.unique` only has to scan within each bucket -- the common case
-  # being one item per key, where this collapses to an O(n) walk.
-  #
-  # Items that share a key but differ structurally must both survive
-  # -- this matches `lib.unique` semantics.  The bucket is an
-  # optimization, not a truncation.
+  # Version of `lib.unique` that should be fast if the name attributes are unique
   uniqueWithName = list:
-    lib.concatMap lib.unique
-      (builtins.attrValues (builtins.groupBy uniqueWithNameKey list));
+    lib.concatMap lib.unique (
+      builtins.attrValues (
+        builtins.groupBy (x: if __typeOf x == "set" then x.name or "noname" else "notset") list));
 
-  # Check that items in `x` are "sufficiently" unique by `uniqueWithNameKey`.
-  # Errors when two items share a key AND are structurally identical -- a
-  # genuine redundant duplicate that `lib.unique` would collapse, and that
-  # almost never reflects intent.
-  # Warns (but passes) when items share a key but differ structurally --
-  # typically a list-merge accident where an explicit override appended to
-  # a default rather than replacing it (use `lib.mkForce`).  Master's
-  # `checkUnique` allowed this silently; bd93f01d3 unintentionally tightened
-  # it to an error; we keep master's tolerance but flag it for visibility.
+  # Assert that each item in the list is unique
   checkUnique = msg: x:
-    let
-      grouped = builtins.groupBy uniqueWithNameKey x;
-      # `lib.unique` would shrink the bucket -> structurally-identical dupes.
-      structuralDupes = lib.filterAttrs
-        (_: v: __length (lib.unique v) < __length v) grouped;
-      # >1 entries that survive `lib.unique` -> distinct items sharing a key.
-      nameOnlyDupes = lib.filterAttrs
-        (_: v: __length v > 1 && __length (lib.unique v) == __length v) grouped;
-    in
-      if structuralDupes != {}
-        then builtins.throw "Duplicate items found in ${msg} ${
-          __toJSON (__attrNames structuralDupes)
-        }"
-      else if nameOnlyDupes != {}
-        then builtins.trace
-          "warning: items in ${msg} share a name but differ structurally (likely a list-merge that should use lib.mkForce): ${
-            __toJSON (__attrNames nameOnlyDupes)
-          }"
-          x
-      else x;
+    if __length x == __length (uniqueWithName x)
+      then x
+      else builtins.throw "Duplicate items found in ${msg} ${
+        __toJSON (__attrNames (lib.filterAttrs (_: v: __length v > 1) (
+          builtins.groupBy (x: if __typeOf x == "set" then x.name or "noname" else "notset") x)))
+      }";
 
   types = import ./types.nix { inherit lib; };
 

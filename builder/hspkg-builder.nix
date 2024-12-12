@@ -31,17 +31,16 @@ let
 
   cabalFile = if package-description-override == null || bundledSrc != null then null else package-description-override;
 
-  # New GHC JS backend run emcc itself without the need for custom Setup.hs
-  oldGhcjs = stdenv.hostPlatform.isGhcjs && builtins.compareVersions ghc.version "9.10" < 0;
-  defaultSetupSrc = if oldGhcjs then ./Setup.ghcjs.hs else ./Setup.hs;
+  defaultSetupSrc = if stdenv.hostPlatform.isGhcjs then abort "No implementation for ghcjs" else ./Setup.hs;
 
   setup = if package.buildType == "Simple"
     then
-      if oldGhcjs
-        then
-          buildPackages.haskell-nix.nix-tools-unchecked.exes.default-setup-ghcjs // { exeName = "default-setup-ghcjs"; }
-        else
-          buildPackages.haskell-nix.nix-tools-unchecked.exes.default-setup // { exeName = "default-setup"; }
+      # The fork attaches both Cabal variants of default Setup to the
+      # nixpkgs-provided GHC, avoiding the removed nix-tools-unchecked path.
+      # Don't try to build default Setup with DWARF enabled.
+      let defaultSetup = ghc.defaultSetupFor package.identifier.name // {
+        dwarf = defaultSetup;
+      }; in defaultSetup
     else setup-builder ({
       component = components.setup // {
         depends = config.setup-depends ++ components.setup.depends ++ package.setup-depends;

@@ -44,24 +44,19 @@ let
   ghcCommand'    = if isGhcjs then "ghcjs" else "ghc";
   ghcCommand     = "${ghc.targetPrefix}${ghcCommand'}";
   ghcCommandCaps = lib.toUpper ghcCommand';
-  # nixpkgs versions of `ghc` do not have a `.libDir` or `.docDir`.  So these
-  # defaults are for them.
   libDir         = ghc.libDir or
+    # nixpkgs versions of `ghc` do not have a `.libDir`.  So this
+    # default is for them.
     ("lib/${ghcCommand}-${ghc.version}"
       + lib.optionalString (__compareVersions ghc.version "9.6.1" >= 0) "/lib");
-  docDir         = ghc.docDir or "share/doc/ghc/html";
   packageCfgDir  = "${libDir}/package.conf.d";
 
-  # Fused single-pass: dependToLib → profiled → dwarf → chooseDrv.
-  # Nix does not perform list fusion, so chaining four `map` calls
-  # allocates four intermediate lists.  A single `map` avoids this.
   libDeps = haskellLib.uniqueWithName (
-    map (d:
-      let base = haskellLib.dependToLib d;
-          prof = if needsProfiling then base.profiled or base else base;
-          dw   = if enableDWARF then prof.dwarf or prof else prof;
-      in chooseDrv dw
-    ) component.depends
+    map chooseDrv (
+      (if enableDWARF then (x: map (p: p.dwarf or p) x) else x: x)
+      ((if needsProfiling then (x: map (p: p.profiled or p) x) else x: x)
+      (map haskellLib.dependToLib component.depends))
+    )
   ) ++ prebuilt-depends;
   script = ''
     ${target-pkg} init $configFiles/${packageCfgDir}
@@ -91,7 +86,7 @@ let
 
     unwrappedGhc=${ghc}
     ghcDeps=${ghc.cachedDeps
-      or (__trace "WARNING: ghc.cachedDeps not found" haskellLib.makeCompilerDeps ghc)}
+      or (haskellLib.makeCompilerDeps ghc).cachedDeps}
     ${ # Copy over the nonReinstallablePkgs from the global package db.
     ''
       for p in ${lib.concatStringsSep " " nonReinstallablePkgs'}; do
@@ -154,7 +149,18 @@ let
       echo "allow-older: ${identifier.name}:*" >> $configFiles/cabal.config
     ''}
 
-    for p in ${lib.concatStringsSep " " nonReinstallablePkgs'}; do
+    for p in "''${pkgsHostTarget[@]}"; do
+      if [ -e $p/envDep ]; then
+        cat $p/envDep >> $configFiles/ghc-environment
+      fi
+      ${ lib.optionalString component.doExactConfig ''
+        if [ -d $p/exactDep ]; then
+          cat $p/exactDep/configure-flags >> $configFiles/configure-flags
+          cat $p/exactDep/cabal.config >> $configFiles/cabal.config
+        fi
+      ''}
+    done
+    for p in ${lib.concatStringsSep " " (lib.remove "ghc" nonReinstallablePkgs')}; do
       if [ -e $ghcDeps/envDeps/$p ]; then
         cat $ghcDeps/envDeps/$p >> $configFiles/ghc-environment
       fi
@@ -167,27 +173,6 @@ let
       fi
     done
   ''
-  # We put the packages in buildInputs *after* the GHC deps on the command line
-  # to ensure that any prebuilt dependencies (see Note [prebuilt dependencies])
-  # take priority over the GHC-provided ones. We can't relink the prebuilt
-  # libraries, so this is the most likely to avoid conflicts.
-  + ''
-    for p in "''${pkgsHostTarget[@]}"; do
-      if [ -e $p/envDep ]; then
-        cat $p/envDep >> $configFiles/ghc-environment
-      fi
-      ${ lib.optionalString component.doExactConfig ''
-        if [ -d $p/exactDep ]; then
-          cat $p/exactDep/configure-flags >> $configFiles/configure-flags
-          cat $p/exactDep/cabal.config >> $configFiles/cabal.config
-        fi
-      ''}
-    done
-  ''
-  # Handle backpack instantiations
-  + (builtins.concatStringsSep "\n" (lib.mapAttrsToList (modname: val: ''
-    echo "--instantiate-with=${modname}=$(cut -d ' ' -f 2 ${val.unit}/envDep):${val.module}" >> $configFiles/configure-flags
-  '') instantiations))
   # This code originates in the `generic-builder.nix` from nixpkgs.  However GHC has been fixed
   # to drop unused libraries referenced from libraries; and this patch is usually included in the
   # nixpkgs's GHC builds.  This doesn't sadly make this stupid hack unnecessary.  It resurfaces in
@@ -236,7 +221,7 @@ let
     done
   '' + ''
     ${target-pkg} -v0 --package-db $configFiles/${packageCfgDir} recache
-  '';  
+  '';
   drv = runCommand "${ghc.targetPrefix}${fullName}-config" {
       nativeBuildInputs = [ghc];
       propagatedBuildInputs = libDeps;
