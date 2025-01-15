@@ -1,6 +1,8 @@
 { sources }:
 let
   overlays = {
+    cabal-install-overlay = final: prev: { bootstrap-cabal-install = final.callPackage ./cabal-install.nix {};};
+
     haskell = import ./haskell.nix { inherit sources; };
 
     # Here is where we import nix-tools into the overlays that haskell.nix is
@@ -9,23 +11,19 @@ let
       let
 
         # Import the overlay from nix-tools' subdirectory
-        nix-tools-pkgs = (import ../nix-tools/overlay.nix {hackage-db-src = "${sources.hackage-db}";}) final prev;
+        nix-tools-exes = final.callPackage ./nix-tools.nix {};
 
       in
       {
         haskell-nix =
-          let
-            nix-tools-hs-pkgs = nix-tools-pkgs.haskell.packages.ghc981;
-            nix-tools-exes = nix-tools-pkgs.haskell.packages.ghc981.nix-tools;
-          in
           prev.haskell-nix // {
             nix-tools = {
               exes =
                   {
-                    cabal = nix-tools-hs-pkgs.cabal-install;
                     truncate-index = nix-tools-exes;
                     make-install-plan = nix-tools-exes;
                     plan-to-nix = nix-tools-exes;
+                    hackage-to-nix = nix-tools-exes;
                   };
               inherit nix-tools-exes;
             };
@@ -58,6 +56,7 @@ let
     #   haskellPackages = { };
     #   haskell-nix-prev = prev;
     # })
+    cabal-install-overlay
     haskell
     nix-tools
     bootstrap
