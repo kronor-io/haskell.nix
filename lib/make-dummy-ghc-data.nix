@@ -22,20 +22,6 @@ let
   inherit (pkgs.haskell-nix) checkMaterialization;
   makeDummyGhcData = ghc: ghc // {
     dummy-ghc-data =
-      let
-        materialized = materialized-dir + "/dummy-ghc/${ghc.targetPrefix}${ghc.name}-${pkgs.stdenv.buildPlatform.system}"
-          + pkgs.lib.optionalString (builtins.compareVersions ghc.version "8.10" < 0 && ghc.targetPrefix == "" && builtins.compareVersions pkgs.lib.version "22.05" < 0) "-old";
-      in pkgs.haskell-nix.materialize ({
-        sha256 = null;
-        sha256Arg = "sha256";
-        materialized = if __pathExists materialized
-          then materialized
-          else __trace "WARNING: No materialized dummy-ghc-data.  mkdir ${toString materialized}"
-            null;
-        reasonNotSafe = null;
-      } // pkgs.lib.optionalAttrs (checkMaterialization != null) {
-        inherit checkMaterialization;
-      }) (
     runCommand ("dummy-data-" + ghc.name) {
       nativeBuildInputs = [ ghc ];
     } ''
@@ -69,7 +55,7 @@ let
         | tr '\r' '\n' \
         | sed -e '$ d' \
           > $out/ghc-pkg/dump-global
-    '');
+    '';
   } // pkgs.lib.optionalAttrs (ghc ? dwarf) {
     dwarf = makeDummyGhcData ghc.dwarf;
   } // pkgs.lib.optionalAttrs (ghc ? smallAddressSpace) {

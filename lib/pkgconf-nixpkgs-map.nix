@@ -23,7 +23,7 @@ pkgs:
 
     "adns"                               = [ "adns" ];
     "alut"                               = [ "freealut" ];
-    "asound"                             = [ "alsaLib" ];
+    "asound"                             = [ "alsa-lib" ];
     "b2"                                 = [ "libb2" ];
     "c++"                                = []; # What is that?
     "cairo-1.0"                          = [ "cairo" ];
@@ -1123,20 +1123,20 @@ pkgs:
     "check" = [ "check" ];
     "chibi-scheme" = [ "chibi" ];
     "libchromaprint" = [ "chromaprint" ];
-    "cscreensaver" = [ "cinnamon" ];
-    "libcinnamon-control-center" = [ "cinnamon" ];
-    "libcinnamon-menu-3.0" = [ "cinnamon" ];
-    "libmuffin" = [ "cinnamon" ];
-    "muffin-clutter-0" = [ "cinnamon" ];
-    "muffin-clutter-x11-0" = [ "cinnamon" ];
-    "muffin-cogl-0" = [ "cinnamon" ];
-    "muffin-cogl-pango-0" = [ "cinnamon" ];
-    "muffin-cogl-path-0" = [ "cinnamon" ];
-    "muffin-plugins" = [ "cinnamon" ];
-    "pix-2.8" = [ "cinnamon" ];
-    "xreader-document-1.5" = [ "cinnamon" ];
-    "xreader-view-1.5" = [ "cinnamon" ];
-    "xviewer" = [ "cinnamon" ];
+    # "cscreensaver" = [ "cinnamon" ];
+    # "libcinnamon-control-center" = [ "cinnamon" ];
+    # "libcinnamon-menu-3.0" = [ "cinnamon" ];
+    # "libmuffin" = [ "cinnamon" ];
+    # "muffin-clutter-0" = [ "cinnamon" ];
+    # "muffin-clutter-x11-0" = [ "cinnamon" ];
+    # "muffin-cogl-0" = [ "cinnamon" ];
+    # "muffin-cogl-pango-0" = [ "cinnamon" ];
+    # "muffin-cogl-path-0" = [ "cinnamon" ];
+    # "muffin-plugins" = [ "cinnamon" ];
+    # "pix-2.8" = [ "cinnamon" ];
+    # "xreader-document-1.5" = [ "cinnamon" ];
+    # "xreader-view-1.5" = [ "cinnamon" ];
+    # "xviewer" = [ "cinnamon" ];
     "cjose" = [ "cjose" ];
     "libcjson" = [ "cjson" ];
     "libclamav" = [ "clamav" ];
@@ -1165,8 +1165,6 @@ pkgs:
     "clipp" = [ "clipp" ];
     "polyclipping" = [ "clipper" ];
     "cln" = [ "cln" ];
-    "cloog-isl" = [ "cloog" ];
-#    "cloog-isl" = [ "cloog_0_18_0" ];
     "clp" = [ "clp" ];
 #    "coindatanetlib" = [ "clp" ];
 #    "coindatasample" = [ "clp" ];
@@ -1656,7 +1654,6 @@ pkgs:
 #    "libgme" = [ "game-music-emu" ];
     "gamemode" = [ "gamemode" ];
     "libgamemodeauto" = [ "gamemode" ];
-    "gamin" = [ "gamin" ];
     "gammu" = [ "gammu" ];
     "gammu-smsd" = [ "gammu" ];
     "ganv-1" = [ "ganv" ];
@@ -1674,7 +1671,7 @@ pkgs:
     "gdk-pixbuf-2.0" = [ "gdk-pixbuf" ];
     "gdk-pixbuf-xlib-2.0" = [ "gdk-pixbuf-xlib" ];
     "gdl-3.0" = [ "gdl" ];
-    "gdome2" = [ "gdome2" ];
+
     "geany" = [ "geany" ];
     "libgeda" = [ "geda" ];
     "gegl-0.4" = [ "gegl" ];
@@ -1761,11 +1758,8 @@ pkgs:
     "gmpxx" = [ "gmp" ];
 #    "gmp" = [ "gmp6" ];
 #    "gmpxx" = [ "gmp6" ];
-    "gmpc" = [ "gmpc" ];
 #    "gmp" = [ "gmpxx" ];
 #    "gmpxx" = [ "gmpxx" ];
-    "gmlib" = [ "gmtk" ];
-    "gmtk" = [ "gmtk" ];
     "gnet-2.0" = [ "gnet" ];
     "gnome-builder-42.1" = [ "gnome-builder" ];
     "gnome-bg-4" = [ "gnome-desktop" ];
@@ -2562,11 +2556,6 @@ pkgs:
     "baseencode" = [ "libbaseencode" ];
     "libbde" = [ "libbde" ];
     "libbdplus" = [ "libbdplus" ];
-    "libbitcoin" = [ "libbitcoin" ];
-    "libbitcoin-client" = [ "libbitcoin-client" ];
-    "libbitcoin-explorer" = [ "libbitcoin-explorer" ];
-    "libbitcoin-network" = [ "libbitcoin-network" ];
-    "libbitcoin-protocol" = [ "libbitcoin-protocol" ];
     "libbladeRF" = [ "libbladeRF" ];
     "blockdev" = [ "libblockdev" ];
     "blockdev-utils" = [ "libblockdev" ];
@@ -2943,8 +2932,8 @@ pkgs:
     "libmusicbrainz3" = [ "libmusicbrainz3" ];
     "libmusicbrainz5" = [ "libmusicbrainz5" ];
     "libmwaw-0.3" = [ "libmwaw" ];
-    "mx-1.0" = [ "libmx" ];
-    "mx-gtk-1.0" = [ "libmx" ];
+
+
     "libmypaint" = [ "libmypaint" ];
     "libmysofa" = [ "libmysofa" ];
 #    "libmariadb" = [ "libmysqlclient" ];
@@ -2997,8 +2986,6 @@ pkgs:
     "oggz" = [ "liboggz" ];
     "liboil-0.3" = [ "liboil" ];
     "libomxil-bellagio" = [ "libomxil-bellagio" ];
-    "liboop-glib2" = [ "liboop" ];
-    "liboop" = [ "liboop" ];
     "libopenaptx" = [ "libopenaptx" ];
     "libopenmpt" = [ "libopenmpt" ];
     "liboping" = [ "liboping" ];
@@ -3157,8 +3144,8 @@ pkgs:
     "libsodium" = [ "libsodium" ];
     "libsolvext" = [ "libsolv" ];
     "libsolv" = [ "libsolv" ];
-    "libsoup-2.4" = [ "libsoup" ];
-    "libsoup-gnome-2.4" = [ "libsoup" ];
+    "libsoup-2.4" = [ "libsoup_2_4" ];
+    "libsoup-gnome-2.4" = [ "libsoup_2_4" ];
     "libsoup-3.0" = [ "libsoup_3" ];
     "spatialaudio" = [ "libspatialaudio" ];
     "libspatialindex" = [ "libspatialindex" ];
@@ -3348,8 +3335,6 @@ pkgs:
     "libxml++-2.6" = [ "libxmlxx" ];
     "libxml++-3.0" = [ "libxmlxx3" ];
     "libxmp" = [ "libxmp" ];
-    "xplayer-plparser" = [ "libxplayer-plparser" ];
-    "xplayer-plparser-mini" = [ "libxplayer-plparser" ];
     "libexslt" = [ "libxslt" ];
     "libxslt" = [ "libxslt" ];
     "libxsmmext" = [ "libxsmm" ];
@@ -3914,7 +3899,6 @@ pkgs:
     "libopenct" = [ "openct" ];
 #    "opencv4" = [ "opencv" ];
 #    "opencv" = [ "opencv2" ];
-    "opencv" = [ "opencv3" ];
 #    "opencv" = [ "opencv3WithoutCuda" ];
     "opencv4" = [ "opencv4" ];
     "opendbx" = [ "opendbx" ];
@@ -4107,8 +4091,6 @@ pkgs:
     "purple" = [ "pidgin" ];
     "libpipewire-0.3" = [ "pipewire" ];
     "libspa-0.2" = [ "pipewire" ];
-    "libpipewire-0.2" = [ "pipewire_0_2" ];
-    "libspa-0.1" = [ "pipewire_0_2" ];
     "pixman-1" = [ "pixman" ];
     "libpjproject" = [ "pjsip" ];
     "libpkcs11-helper-1" = [ "pkcs11helper" ];
@@ -5148,7 +5130,7 @@ pkgs:
     "svrcore" = [ "svrcore" ];
     "SvtAv1Dec" = [ "svt-av1" ];
     "SvtAv1Enc" = [ "svt-av1" ];
-    "swipl" = [ "swiProlog" ];
+    "swipl" = [ "swi-prolog" ];
 #    "swipl" = [ "swiPrologWithGui" ];
     "sword" = [ "sword" ];
     "syncthingconnector" = [ "syncthingtray" ];
@@ -5254,8 +5236,8 @@ pkgs:
     "tss2-tcti-pcap" = [ "tpm2-tss" ];
     "tss2-tcti-swtpm" = [ "tpm2-tss" ];
     "libtracecmd" = [ "trace-cmd" ];
-    "tracker-sparql-3.0" = [ "tracker" ];
-    "tracker-testutils-3.0" = [ "tracker" ];
+    "tracker-sparql-3.0" = [ "tinysparql" ];
+    "tracker-testutils-3.0" = [ "tinysparql" ];
     "trafficserver" = [ "trafficserver" ];
     "tre" = [ "tre" ];
     "tree-sitter" = [ "tree-sitter" ];
@@ -5315,8 +5297,8 @@ pkgs:
 #    "libv4l2rds" = [ "v4l-utils" ];
 #    "libv4l2" = [ "v4l-utils" ];
 #    "libv4lconvert" = [ "v4l-utils" ];
-    "v8" = [ "v8" ];
-#    "v8" = [ "v8_8_x" ];
+
+
 #    "libvala-0.54" = [ "vala" ];
 #    "valadoc-0.54" = [ "vala" ];
 #    "vapigen-0.54" = [ "vala" ];
@@ -5519,7 +5501,6 @@ pkgs:
 #    "d0_rijndael" = [ "xonotic-glx-unwrapped" ];
 #    "d0_blind_id" = [ "xonotic-sdl-unwrapped" ];
 #    "d0_rijndael" = [ "xonotic-sdl-unwrapped" ];
-    "xplayer" = [ "xplayer" ];
     "libpainter" = [ "xrdp" ];
     "rfxcodec" = [ "xrdp" ];
     "xrdp" = [ "xrdp" ];

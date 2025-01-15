@@ -5,7 +5,7 @@
 let
   # Sort and remove duplicates from nonReinstallablePkgs.
   # That way changes to the order of nonReinstallablePkgs does not require rebuilds.
-  nonReinstallablePkgs' = let x = __attrNames (lib.genAttrs nonReinstallablePkgs (x: x)); in __trace x x;
+  nonReinstallablePkgs' = __attrNames (lib.genAttrs nonReinstallablePkgs (x: x));
 
   ghc = if enableDWARF then defaults.ghc.dwarf else defaults.ghc;
 
@@ -86,7 +86,7 @@ let
 
     unwrappedGhc=${ghc}
     ghcDeps=${ghc.cachedDeps
-      or (__trace "WARNING: ghc.cachedDeps not found" haskellLib.makeCompilerDeps ghc)}
+      or (haskellLib.makeCompilerDeps ghc).cachedDeps}
     ${ # Copy over the nonReinstallablePkgs from the global package db.
     ''
       for p in ${lib.concatStringsSep " " nonReinstallablePkgs'}; do
@@ -151,7 +151,6 @@ let
 
     for p in "''${pkgsHostTarget[@]}"; do
       if [ -e $p/envDep ]; then
-        echo "But not here"
         cat $p/envDep >> $configFiles/ghc-environment
       fi
       ${ lib.optionalString component.doExactConfig ''

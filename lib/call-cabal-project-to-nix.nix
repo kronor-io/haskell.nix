@@ -65,7 +65,7 @@
 , ...
 }@args:
 let
-  inherit (evalPackages.haskell-nix) materialize dotCabal;
+  inherit (evalPackages.haskell-nix) dotCabal;
 
   # These defaults are here rather than in modules/cabal-project.nix to make them
   # lazy enough to avoid infinite recursion issues.
@@ -74,7 +74,7 @@ let
   nix-tools = if args.nix-tools or null != null
     then args.nix-tools
     else evalPackages.haskell-nix.nix-tools;
-  cabal-install = nix-tools.exes.cabal;
+  cabal-install = pkgs.bootstrap-cabal-install;
   forName = pkgs.lib.optionalString (name != null) (" for " + name);
   nameAndSuffix = suffix: if name == null then suffix else name + "-" + suffix;
 
@@ -364,19 +364,12 @@ let
     '';
   };
 
-  plan-nix = materialize ({
-    inherit materialized;
-    sha256 = plan-sha256;
-    sha256Arg = "plan-sha256";
-    this = "project.plan-nix" + (if name != null then " for ${name}" else "");
-  } // pkgs.lib.optionalAttrs (checkMaterialization != null) {
-    inherit checkMaterialization;
-  }) (evalPackages.runCommand (nameAndSuffix "plan-to-nix-pkgs") {
+  plan-nix = evalPackages.runCommand (nameAndSuffix "plan-to-nix-pkgs") {
     nativeBuildInputs =
       # The things needed from nix-tools
       [ nix-tools.exes.make-install-plan
         nix-tools.exes.plan-to-nix
-        nix-tools.exes.cabal
+        pkgs.bootstrap-cabal-install
       ]
       ++ pkgs.lib.optional supportHpack nix-tools.exes.hpack
       ++ [dummy-ghc dummy-ghc-pkg evalPackages.rsync evalPackages.gitMinimal evalPackages.allPkgConfigWrapper ];
@@ -462,7 +455,6 @@ let
           # packages used by the solver (cached-index-state >= index-state-max).
           pkgs.lib.optionalString (index-state != null) "--index-state=${index-state}"
         } \
-        -v3 \
         -w ${
           # We are using `-w` rather than `--with-ghc` here to override
           # the `with-compiler:` in the `cabal.project` file.
@@ -523,7 +515,7 @@ let
 
     # move pkgs.nix to default.nix ensure we can just nix `import` the result.
     mv $out${subDir'}/pkgs.nix $out${subDir'}/default.nix
-  '');
+  '';
 in {
   projectNix = plan-nix;
   inherit index-state-max src;

@@ -38,24 +38,6 @@ in {
   packages.cpphs.package.license = pkgs.lib.mkForce "LGPL-2.1-only";
   packages.polyparse.package.license = pkgs.lib.mkForce "LGPL-2.1-only";
 
-  # These two patches are needed by GHCJS
-  packages.Cabal.patches = [
-    (fromUntil "3.2.0.0" "3.5" ../overlays/patches/Cabal/Cabal-3.0.0.0-drop-pkg-db-check.diff)
-    (fromUntil "3.2.0.0" "3.5" ../overlays/patches/Cabal/Cabal-3.0.0.0-no-final-checks.diff)
-    (fromUntil "3.6.0.0" "3.11" ../overlays/patches/Cabal/Cabal-3.6.0.0-drop-pkg-db-check.diff)
-    (fromUntil "3.6.0.0" "3.11" ../overlays/patches/Cabal/Cabal-3.6.0.0-no-final-checks.diff)
-    (fromUntil "3.10" "3.10.3" ../overlays/patches/Cabal/9220.patch)
-  ];
-
-  # These two patches are:
-  #   https://github.com/haskell/cabal/pull/7490
-  #   https://github.com/haskell/cabal/pull/7532
-  # back poerted to cabal 3.4
-  packages.cabal-install.patches = [
-    (fromUntil "3.4.0.0" "3.5" ../overlays/patches/Cabal/Cabal-3.4-defer-build-tool-depends-7532.patch)
-    (fromUntil "3.4.0.0" "3.5" ../overlays/patches/Cabal/Cabal-3.4-speedup-solver-when-tests-enabled-7490.patch)
-  ];
-
   # Avoid dependency on genprimopcode and deriveConstants (cabal does not put these in the plan,
   # most likely because it finds them in the PATH).
   # See https://github.com/input-output-hk/haskell.nix/issues/1808
@@ -71,17 +53,6 @@ in {
   # Remove dependency on hsc2hs (hsc2hs should be in ghc derivation)
   packages.mintty.components.library.build-tools = pkgs.lib.mkForce [];
 
-  packages.ghc-lib-parser.patches = [
-    (fromUntil "8.10.0.0" "9.2" ../overlays/patches/ghc-lib-parser-8.10-global-unique-counters-in-rts.patch)
-    (fromUntil "9.2.0.0" "9.3" ../overlays/patches/ghc-lib-parser-9.2-global-unique-counters-in-rts.patch)
-    (fromUntil "9.4.0.0" "9.7" ../overlays/patches/ghc-lib-parser-9.4-global-unique-counters-in-rts.patch)
-  ];
-
-  # See https://github.com/haskell-nix/hnix/pull/1053
-  packages.hnix.patches = [
-    (fromUntil "0.16.0" "0.16.0.1" ../patches/hnix.patch)
-  ];
-
   # See https://github.com/input-output-hk/haskell.nix/issues/1455
   # This is a work around to make `ghcide` and `haskell-language-server` build with the unboxed tuple patch.
   packages.ghcide = pkgs.lib.mkIf (__elem config.compiler.nix-name [
@@ -90,9 +61,6 @@ in {
       ]) {
     patches =
        [
-        (fromUntil "1.7.0.0" "1.8.0.0" ../patches/ghcide-1.7-unboxed-tuple-fix-issue-1455.patch)
-        (fromUntil "1.8.0.0" "2.1.0.0" ../patches/ghcide-1.8-unboxed-tuple-fix-issue-1455.patch)
-        (fromUntil "2.2.0.0" "2.3.0.0" ../patches/ghcide-2.2-unboxed-tuple-fix-issue-1455.patch)
       ]
       # This is needed for a patch only applied to ghc810420210212
       ++ pkgs.lib.optional (__elem config.compiler.nix-name [
@@ -110,12 +78,6 @@ in {
     keepGhc = pkgs.stdenv.hostPlatform.isDarwin;
     keepConfigFiles = pkgs.stdenv.hostPlatform.isDarwin;
   };
-
-  packages.language-c.patches = [
-    # See https://github.com/visq/language-c/pull/89
-    # this adds support for __int128_t and __uint128_t to language-c
-    (fromUntil "0.9.1" "0.9.2" ../patches/languge-c-int128.patch)
-  ];
 
   packages.discount.components.library.libs = pkgs.lib.mkForce [ pkgs.discount ];
 
@@ -176,11 +138,6 @@ in {
   packages.directory.flags = pkgs.lib.optionalAttrs (builtins.compareVersions config.compiler.version "9.9" > 0) { os-string = true; };
   packages.Win32.flags     = pkgs.lib.optionalAttrs (builtins.compareVersions config.compiler.version "9.9" > 0) { os-string = true; };
   packages.hashable.flags  = pkgs.lib.optionalAttrs (builtins.compareVersions config.compiler.version "9.9" > 0) { os-string = true; };
-
-  # See https://github.com/Bodigrim/bitvec/pull/61
-  packages.bitvec.patches = [
-    (fromUntil "1.1.3.0" "1.1.3.0.1" ../patches/bitvec-gmp-fix.patch)
-  ];
 
   # ghc-paths stores the path of the GHC compiler used to build the component.
   # we need to keep it in the store so that it will remain valid.

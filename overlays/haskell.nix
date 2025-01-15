@@ -196,60 +196,11 @@ final: prev: {
         # Creates Cabal local repository from { name, index } set.
         mkLocalHackageRepo = import ../mk-local-hackage-repo final;
 
-        # Dummy version of ghc to work around https://github.com/haskell/cabal/issues/8352
-        cabal-issue-8352-workaround = [
-          (final.writeTextFile {
-            name = "dummy-ghc";
-            executable = true;
-            destination = "/bin/ghc";
-            text = ''
-              #!${final.runtimeShell}
-              case "$*" in
-                --version*)
-                  echo 'The Glorious Glasgow Haskell Compilation System, version 8.10.7'
-                  ;;
-                --numeric-version*)
-                  echo '8.10.7'
-                  ;;
-                --supported-languages*)
-                  echo Haskell2010
-                  ;;
-                --info*)
-                  echo '[]'
-                  ;;
-                *)
-                  echo "Unknown argument '$*'" >&2
-                  exit 1
-                  ;;
-              esac
-              exit 0
-            '';
-          })
-          (final.writeTextFile {
-            name = "dummy-ghc";
-            executable = true;
-            destination = "/bin/ghc-pkg";
-            text = ''
-              #!${final.runtimeShell}
-              case "$*" in
-                --version*)
-                  echo 'GHC package manager version 8.10.7'
-                  ;;
-                *)
-                  echo "Unknown argument '$*'" >&2
-                  exit 1
-                  ;;
-              esac
-              exit 0
-            '';
-          })
-        ];
-
         dotCabal = { index-state, sha256, extra-hackage-tarballs ? {}, extra-hackage-repos ? {}, nix-tools, ... }:
             let
               # NOTE: root-keys: aaa is because key-threshold: 0 does not seem to be enough by itself
               bootstrapIndexTarball = name: index: final.runCommand "cabal-bootstrap-index-tarball-${name}" {
-                nativeBuildInputs = [ nix-tools.exes.cabal ];
+                nativeBuildInputs = [ final.bootstrap-cabal-install ];
               } ''
                 HOME=$(mktemp -d)
                 mkdir -p $HOME/.cabal/packages/${name}
@@ -271,7 +222,7 @@ final: prev: {
                   name = "01-index.tar.gz-at-${builtins.replaceStrings [ ":" ] [ "" ] index-state}";
                   url = "https://hackage.haskell.org/01-index.tar.gz";
                   downloadToTemp = true;
-                  postFetch = "${nix-tools.exes.truncate-index} -o $out -i $downloadedFile -s ${index-state}";
+                  postFetch = "${nix-tools.exes.truncate-index}/bin/truncate-index -o $out -i $downloadedFile -s ${index-state}";
                   outputHashAlgo = "sha256";
                   outputHash = sha256;
                 });
@@ -419,7 +370,7 @@ final: prev: {
               # -----------------------+---------------+------------+
               #
               final.runCommand "dot-cabal" {
-                nativeBuildInputs = [ nix-tools.exes.cabal final.xorg.lndir ];
+                nativeBuildInputs = [ final.bootstrap-cabal-install final.xorg.lndir ];
               } ''
                 # prepopulate hackage
                 mkdir -p $out/packages/hackage.haskell.org
@@ -458,12 +409,6 @@ final: prev: {
         checkMaterialization = false; # This is the default. Use an overlay to set it to true and test all the materialized files
 
         # Helps materialize the output of derivations
-        materialize = import ../lib/materialize.nix {
-          pkgs = final.pkgsBuildBuild;
-          inherit (final.pkgsBuildBuild) nix runCommand writeShellScript;
-          inherit (final.haskell-nix) checkMaterialization;
-        };
-
         update-index-state-hashes = import ../scripts/update-index-state-hashes.nix {
             inherit (final.haskell-nix) indexStateHashesPath;
             inherit (final) coreutils nix writeShellScriptBin stdenv lib curl;

@@ -92,7 +92,7 @@ let
 
       # Check there is no chance we are building `cabalFromCabalInstall`.  Using `cabalFromCabalInstall`
       # to build itself would cause infinite recursion.
-      defaultSetupFor = packageName: __trace packageName (
+      defaultSetupFor = packageName:
         if
           # Cabal that comes with GHC 9.6.3 is newer than cabal-install
           __compareVersions ghc.version "9.6.3" < 0
@@ -107,7 +107,7 @@ let
                "containers" "binary" "mtl" "text" "process" "parsec" "stm" "exceptions"]
           )
         then defaultSetup.useCabalFromCabalInstall
-        else defaultSetup.useCabalFromGHC);
+        else defaultSetup.useCabalFromGHC;
     };
 in {
   haskell-nix = prev.haskell-nix // {

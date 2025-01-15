@@ -145,7 +145,7 @@ let
       repoContents = if inputMap ? ${attrs.url}
         # If there is an input use it to make `file:` url and create a suitable `.cabal/packages/${name}` directory
         then evalPackages.runCommand name ({
-          nativeBuildInputs = [ cabal-install ] ++ evalPackages.haskell-nix.cabal-issue-8352-workaround;
+          nativeBuildInputs = [ cabal-install ];
           preferLocalBuild = true;
         }) ''
             HOME=$(mktemp -d)
@@ -186,7 +186,7 @@ let
       # Output of hackage-to-nix
       hackage = import (
         evalPackages.runCommand ("hackage-to-nix-" + name) {
-          nativeBuildInputs = [ cabal-install evalPackages.curl nix-tools ];
+          nativeBuildInputs = [ cabal-install evalPackages.curl nix-tools.exes.hackage-to-nix ];
           LOCALE_ARCHIVE = pkgs.lib.optionalString (evalPackages.stdenv.buildPlatform.libc == "glibc") "${evalPackages.glibcLocales}/lib/locale/locale-archive";
           LANG = "en_US.UTF-8";
           preferLocalBuild = true;

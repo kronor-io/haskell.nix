@@ -24,7 +24,7 @@ in
 
   options.reinstallableLibGhc = lib.mkOption {
     type = lib.types.bool;
-    default = false;
+    default = true;
     description = "Is lib:ghc reinstallable?";
   };
   options.setup-depends = lib.mkOption {
@@ -55,35 +55,13 @@ in
 
   config.nonReinstallablePkgs =
     [ "rts" "ghc-prim" "integer-gmp" "integer-simple" "base"
-      "deepseq" "array" "ghc-boot-th" "pretty" "template-haskell"
+      "array"
+      "ghc-boot-th" "template-haskell"
+      "ghc-boot" "ghc-platform" "ghc-internal" "ghc-heap" "ghc"
+      "system-cxx-std-lib" "pretty" "deepseq" "ghc-bignum"
+
       # ghcjs custom packages
       "ghcjs-prim" "ghcjs-th"
-    ]
-    ++ lib.optionals (builtins.compareVersions config.compiler.version "8.11" >= 0) [
-      "ghc-bignum"]
-    ++ lib.optionals (builtins.compareVersions config.compiler.version "9.1" >= 0) [
-      "system-cxx-std-lib"]
-    ++ lib.optionals (builtins.compareVersions config.compiler.version "9.9" >= 0) [
-      "ghc-internal"]
-    ++ lib.optionals (!config.reinstallableLibGhc) ([
-      "ghc-boot"
-      "ghc" "Cabal" "Win32" "array" "binary" "bytestring" "containers"
-      "directory" "filepath" "ghc-boot" "ghc-compact" "ghc-prim"
-      # "ghci" "haskeline"
-      "hpc"
-      "mtl" "parsec" "process" "text" "time" "transformers"
-      "unix" "xhtml" "terminfo"
-    ]
-    ++ lib.optionals (builtins.compareVersions config.compiler.version "8.11" >= 0) [
-      # stm and exceptions are needed by the GHC package since 9.0.1
-      "stm" "exceptions"]
-    ++ lib.optionals (builtins.compareVersions config.compiler.version "9.8.1" >= 0) [
-      "semaphore-compat"]
-    ++ lib.optionals (builtins.compareVersions config.compiler.version "9.9" >= 0) [
-      "os-string"]
-    )
-    ++ lib.optionals (!config.reinstallableLibGhc || __elem config.compiler.nix-name ["ghc865"]) [
-      "ghc-heap"
     ];
 
   options.bootPkgs = lib.mkOption {

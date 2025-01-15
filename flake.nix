@@ -2,27 +2,13 @@
   description = "Alternative Haskell Infrastructure for Nixpkgs";
 
   inputs = {
-    nixpkgs.follows = "nixpkgs-2405";
-    nixpkgs-2405 = { url = "github:NixOS/nixpkgs/release-24.05"; };
+    nixpkgs.follows = "nixpkgs-2411";
+    nixpkgs-2405 = { url = "github:NixOS/nixpkgs/release-24.11"; };
     flake-compat = { url = "github:input-output-hk/flake-compat/hkm/gitlab-fix"; flake = false; };
-    hydra.url = "hydra";
     hackage = {
       url = "github:kronor-io/hackage.nix/main";
       flake = false;
     };
-    stackage = {
-      url = "github:input-output-hk/stackage.nix";
-      flake = false;
-    };
-    nix-tools-static = {
-      url = "github:input-output-hk/haskell-nix-example/nix";
-      flake = false;
-    };
-    cabal-36 = {
-      url = "github:haskell/cabal/3.6";
-      flake = false;
-    };
-
     hackage-db = {
       url = "github:michaelpj/hackage-db/83f819cb08742d3c86a83b407d45c1f6c1c7e299";
       flake = false;

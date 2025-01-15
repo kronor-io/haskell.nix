@@ -29,9 +29,9 @@ library
                      , Stack2nix.External.Resolve
                      , Stack2nix.Project
                      , Stack2nix.Stack
-  build-depends:       base          >= 4    && <4.20
-                     , Cabal         >= 3.10 && <3.11
-                     , Cabal-syntax  >= 3.10 && <3.11
+  build-depends:       base          >= 4    && <4.23
+                     , Cabal         >= 3.10 && <3.15
+                     , Cabal-syntax  >= 3.10 && <3.15
                      , aeson         >= 2.0  && <2.3
                      , aeson-pretty
                      , base16-bytestring

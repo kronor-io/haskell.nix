@@ -48,7 +48,7 @@ in
   Xinerama = [ xorg.libXinerama ];
   mysqlclient = [ mysql ];
   Imlib2 = [ imlib2 ];
-  asound = [ alsaLib ];
+  asound = [ alsa-lib ];
   ffi = null;
   bz2 = [ bzip2 ];
   util = [ utillinux ];

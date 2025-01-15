@@ -68,7 +68,7 @@ let
         inherit evalPackages;
         version = "5.0.18.4";
         # index-state = pkgs.haskell-nix.internalHackageIndexState;
-        index-state = "2024-05-15T00:00:00Z";
+        index-state = "2024-05-14T23:56:58Z";
       }
     }:
     let

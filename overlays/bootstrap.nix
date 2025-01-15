@@ -1,6 +1,6 @@
 final: prev:
 let
-    buildBootstrapper.compilerNixName = "ghc981";
+    buildBootstrapper.compilerNixName = "ghc912";
 
     latestVer = {
       "9.8" = "9.8.1";
@@ -11,7 +11,13 @@ in {
 
     # Use this to disable the existing haskell infra structure for testing purposes
     compiler = {
+      ghc966 = final.haskell.compiler.ghc966;
+
       ghc981 = final.haskell.compiler.ghc981;
+      ghc982 = final.haskell.compiler.ghc982;
+
+      ghc912 = final.haskell.compiler.ghc912;
+      ghc9121 = final.haskell.compiler.ghc912;
         };
 
     # Both `cabal-install` and `nix-tools` are needed for `cabalProject`
