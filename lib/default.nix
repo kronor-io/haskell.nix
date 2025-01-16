@@ -95,7 +95,7 @@ in {
     || isBenchmark componentId;
   mayHaveExecutable = isExecutableType;
 
-  # Was there a reference to the package source in the `cabal.project` or `stack.yaml` file.
+  # Was there a reference to the package source in the `cabal.project`
   # This is used to make the default `packages` list for `shellFor`.
   isLocalPackage = p: p.isLocal or false;
   selectLocalPackages = lib.filterAttrs (_n: p: p != null && isLocalPackage p);
@@ -269,11 +269,6 @@ in {
       then versionOrMod
     else [versionOrMod];
 
-  # Find the resolver in the stack.yaml file and fetch it if a sha256 value is provided
-  fetchResolver = import ./fetch-resolver.nix {
-    inherit (pkgs.buildPackages) pkgs;
-  };
-
   inherit (import ./cabal-project-parser.nix {
     inherit pkgs;
   }) parseIndexState parseSourceRepositoryPackages parseRepositories parseSourceRepositoryPackageBlock parseRepositoryBlock;
@@ -316,13 +311,13 @@ in {
   };
 
   # Run evalModules passing the project function argument (m) as a module along with
-  # the the a projectType module (../modules/cabal-project.nix or ../modules/stack-project.nix).
+  # the the a projectType module (../modules/cabal-project.nix).
   # The resulting config is then passed to the project function's implementation.
   evalProjectModule = projectType: m: f:
     let project = f
       (lib.evalModules {
         modules = (if builtins.isList m then m else [m]) ++ [
-          # Include ../modules/cabal-project.nix or ../modules/stack-project.nix
+          # Include ../modules/cabal-project.nix
           (import ../modules/project-common.nix)
           (import projectType)
           # Pass the pkgs and the buildProject to the modules
@@ -496,10 +491,6 @@ in {
     # Build the plan-nix and check it if materialized
     // lib.optionalAttrs (checkedProject ? plan-nix) {
       inherit (checkedProject) plan-nix;
-    }
-    # Build the stack-nix and check it if materialized
-    // lib.optionalAttrs (checkedProject ? stack-nix) {
-      inherit (checkedProject) stack-nix;
     };
 
   mkFlake = project: {

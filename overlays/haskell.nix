@@ -23,21 +23,7 @@ final: prev: {
         # here and be explicit about imports and dependencies.
         callPackage = prev.lib.callPackageWith (final // final.haskell-nix);
 
-        # You can provide different pins for hackage.nix and stackage.nix if required.
-        # It's also possible to override these sources with NIX_PATH.
-        hackageSourceJSON = ../hackage-src.json;
-        stackageSourceJSON = ../stackage-src.json;
-
-        # ghc hackage patches.
-        # these are patches that turn hackage packages into the same as the ones
-        # ghc ships with the supposedly same version. See GHC Track Issue: 16199
-        # ghcHackagePatches = import ../patches;
-
         compat = import ../lib/compat.nix;
-
-        # Utility function for downloading a pinned git repo, that can be
-        # overridden with NIX_PATH.
-        fetchExternal = import ../lib/fetch-external.nix;
 
         # Functions for cleaning Haskell source directories.
         inherit (import ../lib/clean-source-haskell.nix { inherit (final) lib; })
@@ -52,10 +38,6 @@ final: prev: {
         # index states.  Starting from April 1st 2019.
         indexStateHashesPath = hackageSrc + "/index-state-hashes.nix";
 
-        # The set of all Stackage snapshots
-        stackageSrc = sources.stackage;
-        stackage = import stackageSrc;
-
         # Utility functions for working with the component builder.
         haskellLib = let hl = import ../lib {
             pkgs = final;
@@ -66,7 +48,7 @@ final: prev: {
         # Create a Haskell package set based on a cabal build plan (plan-to-nix)
         # and Nix expressions representing cabal packages (cabal-to-nix).
         mkPkgSet =
-            { pkg-def  # Base package set. Either from stackage (via stack-to-nix) or from a cabal projects plan file (via plan-to-nix)
+            { pkg-def  # Base package set. From a cabal projects plan file (via plan-to-nix)
             , pkg-def-extras ? [] # Additional packages to augment the Base package set `pkg-def` with.
             , modules ? []
             , extra-hackages ? [] # Extra Hackage repositories to use besides main one.
@@ -89,6 +71,7 @@ final: prev: {
         # info.  Instead we can add ghc-boot-packages to `pkg-def-extras`.
         # The compiler-nix-name allows non default values (like
         # "ghc8102-experimental").
+        # TODO: don't know how this affects anything
         excludeBootPackages = compiler-nix-name: pkg-def: hackage:
           let original = pkg-def hackage;
               bootPkgNames = [ "base" "bytestring" "deepseq" "deriveConstants" "genprimopcode" "ghc"
@@ -105,39 +88,6 @@ final: prev: {
             #         original.packages;
             #     }
             else original;
-
-        # Create a Haskell package set based on a Stack configuration.
-        mkStackPkgSet =
-            { stack-pkgs  # Path to the output of stack-to-nix
-            , pkg-def-extras ? []
-            , modules ? []
-            }:
-            let
-                # The Stackage release referenced in the stack config
-                pkg-def = stackage.${stack-pkgs.resolver} or (throw ''
-                This version of stackage.nix does not know about the Stackage resolver ${stack-pkgs.resolver}.
-                You may need to update haskell.nix to one that includes a newer stackage.nix.
-                '');
-                # The compiler referenced in the stack config
-                compiler = (stack-pkgs.extras hackage).compiler or (pkg-def hackage).compiler;
-                patchesModule = ghcHackagePatches.${compiler.nix-name} or {};
-                # Remove fake packages generated from stack keywords used in ghc-options
-                removeStackSpecial = module: if builtins.typeOf module == "set"
-                  then module // { packages = removeSpecialPackages (module.packages or {}); }
-                  else module;
-                removeSpecialPackages = ps: removeAttrs ps [ "$locals" "$targets" "$everything" ];
-            in mkPkgSet {
-                pkg-def = excludeBootPackages compiler.nix-name pkg-def;
-                pkg-def-extras = [ stack-pkgs.extras
-                                   final.ghc-boot-packages.${compiler.nix-name}
-                                 ]
-                              ++ pkg-def-extras;
-                # set doExactConfig = true. The stackage set should be consistent
-                # and we should trust stackage here!
-                modules = [ { doExactConfig = true; } patchesModule ]
-                       ++ modules
-                       ++ map removeStackSpecial (stack-pkgs.modules or []);
-            };
 
         # Create a Haskell package set based on a Cabal configuration.
         mkCabalProjectPkgSet =
@@ -184,14 +134,6 @@ final: prev: {
                        ++ plan-pkgs.modules or [];
                 inherit extra-hackages;
             };
-
-        # Package sets for all stackage snapshots.
-        snapshots = import ../snapshots.nix { inherit (final) lib ghc-boot-packages; inherit mkPkgSet stackage excludeBootPackages; };
-        # Pick a recent LTS snapshot to be our "default" package set.
-        haskellPackages =
-            if final.stdenv.targetPlatform.isAarch64 && final.stdenv.buildPlatform.isAarch64
-            then snapshots."lts-15.13"
-            else snapshots."lts-14.13";
 
         # Creates Cabal local repository from { name, index } set.
         mkLocalHackageRepo = import ../mk-local-hackage-repo final;
@@ -398,26 +340,14 @@ final: prev: {
                 EOF
               '';
 
-        # Some of features of haskell.nix rely on using a hackage index
-        # to calculate a build plan.  To maintain stability for caching and
-        # to allow the outputs to be materialized we pin this value here.
-        # If you want to update this value it important to check the
-        # materializations.  Turn `checkMaterialization` on below and
-        # check the CI results before turning it off again.
-        internalHackageIndexState = "2023-11-19T00:00:00Z"; # Remember to also update ../nix-tools/cabal.project and ../nix-tools/flake.lock
-
-        checkMaterialization = false; # This is the default. Use an overlay to set it to true and test all the materialized files
-
         # Helps materialize the output of derivations
+        # TODO: Marked for deletion
         update-index-state-hashes = import ../scripts/update-index-state-hashes.nix {
             inherit (final.haskell-nix) indexStateHashesPath;
             inherit (final) coreutils nix writeShellScriptBin stdenv lib curl;
             # Update scripts use the internal nix-tools (compiled with a fixed GHC version)
             nix-tools = final.haskell-nix.nix-tools-unchecked;
         };
-
-        # Function to call stackToNix
-        callStackToNix = import ../lib/call-stack-to-nix.nix;
 
         # given a source location call `cabal-to-nix` (from nix-tools) on it
         # to produce the nix representation of it.
@@ -433,131 +363,6 @@ final: prev: {
             } ''
             cabal-to-nix "${src}" "${src}/${cabal-file}" > "$out"
             '';
-
-
-        # Given a single cache entry:
-        # { name = ...; url = ...; rev = ...; ref = ...; sha256 = ...; cabal-file = ...; type = ...; is-private = ...; }
-        # compute a string that represents this cache entry:
-        # "${url} ${rev} ${subdir} ${sha256} ${name} ${nix-expr}"
-        #
-        # This handles private repositories with the `is-private` argument
-        # (with `builtins.fetchGit`), as well as handling stack-based projects
-        # with the `type` argument.
-        mkCacheLine = { name, url, rev, ref ? null, subdir ? ".", sha256 ? null, cabal-file ? "${name}.cabal", type ? "cabal", is-private ? false }:
-          let
-            # Fetch the entire repo, using either pkgs.fetchgit or
-            # builtins.fetchGit depending on whether the repo is private.
-            entireRepo =
-              if is-private
-              then
-                # It doesn't make sense to specify sha256 on a private repo
-                # because it is not used by buitins.fetchGit.
-                assert isNull sha256;
-                builtins.fetchGit
-                  ({ inherit url rev; } //
-                      final.buildPackages.lib.optionalAttrs (ref != null) { inherit ref; }
-                  )
-              else
-                # Non-private repos must have sha256 set.
-                assert sha256 != null;
-                # pkgs.fetchgit doesn't have any way of fetching from a given
-                # ref.
-                assert isNull ref;
-                final.fetchgit {
-                  url = url;
-                  rev = rev;
-                  sha256 = sha256;
-                };
-
-            # This is basically entireRepo, but focused on the subdir if it is specified.
-            repoWithSubdir =
-              entireRepo + (if subdir == "." then "" else "/" + subdir);
-
-            nix-expr =
-              if type == "cabal"
-              then
-                final.buildPackages.haskell-nix.callCabalToNix {
-                  src = repoWithSubdir;
-                  inherit name cabal-file;
-                }
-              else if type == "stack"
-              then
-                (final.buildPackages.haskell-nix.callStackToNix {
-                  src = repoWithSubdir;
-                  inherit name subdir;
-                }).projectNix
-              else
-                throw "Unknown type '${type}` for a cache entry";
-
-            sha256String = if isNull sha256 then final.buildPackages.lib.fakeSha256 else sha256;
-
-          in {
-            line = "${url} ${rev} ${subdir} ${sha256String} ${name}";
-            inherit nix-expr;
-          };
-
-        # Given a list of repos:
-        # [ { name = ...; url = ...; rev = ...; ref = ...; sha256 = ...; cabal-file = ...; type = ...; is-private = ...; } ]
-        # produce a cache file that can be used for
-        # stack-to-nix or plan-to-nix to prevent them
-        # from needing network access.
-        # The cache contains only local paths to nix files so that it can
-        # the results of `stack-to-nix` can be imported in restricted eval
-        # mode.
-        mkCacheFile = repos:
-          final.buildPackages.pkgs.runCommand "cache-file" {} ''
-              mkdir -p $out
-              touch $out/.stack-to-nix.cache
-              ${final.lib.concatStrings (
-                final.lib.lists.zipListsWith (n: repo:
-                  let l = mkCacheLine repo;
-                  in ''
-                    cp ${l.nix-expr} $out/.stack-to-nix.cache.${toString n}
-                    echo ${l.line} .stack-to-nix.cache.${toString n} >> $out/.stack-to-nix.cache
-                  '')
-                  (final.lib.lists.range 0 ((builtins.length repos) - 1))
-                  repos)
-              }
-          '';
-
-        genStackCache = import ../lib/stack-cache-generator.nix;
-
-        mkCacheModule = cache:
-            # for each item in the `cache`, set
-            #   packages.$name.src = fetchgit ...
-            # and
-            #   packages.$name.postUnpack = ...
-            # if subdir is given.
-            #
-            # We need to do this, as cabal-to-nix will generate
-            # src = /nix/store/... paths, and when we build the
-            # package we won't have access to the /nix/store
-            # path.  As such we regenerate the fetchgit command
-            # we used in the first place, and thus have a proper
-            # src value.
-            #
-            # TODO: this should be moved into `call-stack-to-nix`
-            { packages =
-                let
-                  repoToAttr = { name, url, rev, ref ? null, sha256 ? null, subdir ? null, is-private ? false, ... }: {
-                    ${name} = {
-                      src =
-                        if is-private
-                        then
-                          builtins.fetchGit
-                            ({ inherit url rev; } //
-                              final.buildPackages.lib.optionalAttrs (ref != null) { inherit ref; }
-                            )
-                        else
-                          final.fetchgit { inherit url rev sha256; };
-                    } // final.buildPackages.lib.optionalAttrs (subdir != null && subdir != ".") { postUnpack = "sourceRoot+=/${subdir}; echo source root reset to $sourceRoot"; };
-                  };
-
-                  cacheMap = builtins.map repoToAttr cache;
-                in
-                builtins.foldl' (x: y: x // y) {} cacheMap;
-
-            };
 
         # Takes a haskell src directory runs cabal new-configure and plan-to-nix.
         # Resulting nix files are added to nix-plan subdirectory.
@@ -575,9 +380,10 @@ final: prev: {
         };
 
         # References to the unpacked sources, for caching in a Hydra jobset.
+       # TODO: Marked for deletion
         source-pins = import ../lib/make-source-pins.nix {
             inherit (final) lib writeTextFile;
-            sources = [ hackageSrc stackageSrc final.path ];
+            sources = [ hackageSrc final.path ];
         };
 
         # -- IFDs --
@@ -879,62 +685,15 @@ final: prev: {
         cabalProject = args: let p = cabalProject' args;
             in p.hsPkgs // p;
 
-        stackProject' =
-          projectModule: haskellLib.evalProjectModule ../modules/stack-project.nix projectModule (
-            { config, options, ... }:
-            let inherit (config) evalPackages;
-                callProjectResults = callStackToNix (config
-                  // final.lib.optionalAttrs (config.cache == null) { inherit cache; });
-                generatedCache = genStackCache config;
-                cache = if config.cache != null then config.cache else generatedCache;
-            in let
-              buildProject = if final.stdenv.hostPlatform != final.stdenv.buildPlatform
-                then final.buildPackages.haskell-nix.stackProject' projectModule
-                else project;
-              pkg-set = mkStackPkgSet
-                { stack-pkgs = importAndFilterProject callProjectResults;
-                  pkg-def-extras = (config.pkg-def-extras or []);
-                  modules = [ { _module.args.buildModules = final.lib.mkForce buildProject.pkg-set; }
-                      (mkCacheModule cache) ]
-                    ++ (config.modules or [])
-                    ++ final.lib.optional (config.ghc != null) { ghc.package = config.ghc; }
-                    ++ final.lib.optional (config.compiler-nix-name != null)
-                        { compiler.nix-name = final.lib.mkForce config.compiler-nix-name; }
-                    ++ [ { evalPackages = final.lib.mkDefault evalPackages; } ];
-                };
-
-                project = addProjectAndPackageAttrs {
-                  inherit (pkg-set.config) hsPkgs;
-                  inherit pkg-set;
-                  inherit options;
-                  args = config;
-                  stack-nix = callProjectResults.projectNix;
-                  tool = final.buildPackages.haskell-nix.tool' evalPackages pkg-set.config.compiler.nix-name;
-                  tools = final.buildPackages.haskell-nix.tools' evalPackages pkg-set.config.compiler.nix-name;
-                  roots = final.haskell-nix.roots pkg-set.config.compiler.nix-name;
-                  projectFunction = haskell-nix: haskell-nix.stackProject';
-                  inherit projectModule buildProject;
-                };
-            in project);
-
-        stackProject = args: let p = stackProject' args;
-            in p.hsPkgs // p;
-
-        # `project'` and `project` automatically select between `cabalProject`
-        # and `stackProject` (when possible) by looking for `stack.yaml` or
-        # `cabal.project` files.  If both exist it uses the `cabal.project` file.
+        # `project'` and `project` automatically select `cabal.project` file.
         # To override this pass in:
-        #     `projectFileName = "stack.yaml;"`
-        # If the selected file ends in a `.yaml` it is assumed to be for `stackProject`.
-        # If neither `stack.yaml` nor `cabal.project` exist `cabalProject` is
-        # used (as it will use a default `cabal.project`).
+        #     `projectFileName = "cabal.project.prod;"`
         project' = projectModule:
           let
             projectModule' = if builtins.isList projectModule then projectModule else [projectModule];
             inherit ((final.lib.evalModules {
               modules = [
                 (import ../modules/project-common.nix)
-                (import ../modules/stack-project.nix)
                 (import ../modules/cabal-project.nix)
                 (import ../modules/project.nix)
                 {_module.args.pkgs = final;} # Needed to make `src = config.evalPackages.haskell-nix.haskellLib.cleanGit ...` work
@@ -942,40 +701,20 @@ final: prev: {
             }).config) src projectFileName;
             dir = __readDir (src.origSrcSubDir or src);
             exists = fileName: builtins.elem (dir.${fileName} or "") ["regular" "symlink"];
-            stackYamlExists    = exists "stack.yaml";
             cabalProjectExists = exists "cabal.project";
             selectedFileName =
               if projectFileName != null
                 then projectFileName  # Prefer the user selected project file name
-                else
-                  if stackYamlExists && cabalProjectExists
-                    then __trace ("haskell-nix.project : both `stack.yaml` and `cabal.project` files exist.  Using `cabal.project`. "
-                      + "set `projectFileName = \"stack.yaml\";` to override this.`") "cabal.project"
-                    else
-                      if stackYamlExists
-                        then "stack.yaml"      # stack needs a stack.yaml
-                        else "cabal.project";  # the cabal.project file is optional
+                else "cabal.project";
           in
-            if final.lib.hasSuffix ".yaml" selectedFileName
-              then stackProject' ([
-                    (import ../modules/project.nix)
-                    { stackYaml = selectedFileName; }
-                  ] ++ projectModule'
-                )
-              else cabalProject' ([
-                    (import ../modules/project.nix)
-                    { cabalProjectFileName = selectedFileName; }
-                  ] ++ projectModule');
+            cabalProject' ([
+              (import ../modules/project.nix)
+              { cabalProjectFileName = selectedFileName; }
+            ] ++ projectModule');
 
-        # This is the same as the `cabalPackage` and `stackPackage` wrappers
-        # for `cabalPackage` and `stackPackage`.
+        # This is the same as the `cabalPackage` wrapper for `cabalPackage`
         project = args: let p = project' args;
           in p.hsPkgs // p;
-
-        # Like `cabalProject'`, but for building the GHCJS compiler.
-        # This is exposed to allow GHCJS developers to work on the GHCJS
-        # code in a nix-shell with `shellFor`.
-        ghcjsProject = import ../lib/ghcjs-project.nix { pkgs = final; materialized-dir = ../materialized; };
 
         # The functions that return a plan-nix often have a lot of dependencies
         # that could be GCed and also will not make it into hydra cache.
@@ -985,57 +724,6 @@ final: prev: {
         # In your tests module add something that is effectively
         #   testProjectPlan = withInputs project.plan-nix;
         withInputs = final.recurseIntoAttrs;
-
-        iserv-proxy-exes = __mapAttrs (compiler-nix-name: _ghc:
-          if __compareVersions final.buildPackages.haskell-nix.compiler.${compiler-nix-name}.version "9.4" <0
-            then {
-              inherit (final.buildPackages.ghc-extra-packages.${compiler-nix-name}.iserv-proxy.components.exes) iserv-proxy;
-              # remote-iserv however needs to come from the regular packages as it has to
-              # run on the target host.
-              iserv-proxy-interpreter = final.ghc-extra-packages.${compiler-nix-name}.remote-iserv.components.exes.remote-iserv;
-            }
-          else
-            let
-              exes = pkgs: (pkgs.haskell-nix.cabalProject' ({pkgs, ...}: {
-                name = "iserv-proxy";
-                inherit compiler-nix-name;
-
-                src = sources.iserv-proxy;
-
-                index-state = final.haskell-nix.internalHackageIndexState;
-                modules = [{
-                  config = {
-                    reinstallableLibGhc = false;
-                    # Prevent the iserve-proxy-interpreter from depending on itself
-                    # by disabling the `--ghc-option` normally passed to `setupBuildFlags`
-                    # when cross compiling.
-                    setupBuildFlags = final.lib.mkForce [];
-                  };
-                  options.nonReinstallablePkgs = pkgs.lib.mkOption {
-                    apply = x: x ++ [ "ghci" "exceptions" "stm" "libiserv" ];
-                  };
-                }];
-              } // (if __compareVersions final.buildPackages.haskell-nix.compiler.${compiler-nix-name}.version "9.8.1" < 0
-                then {
-                  materialized =../materialized/iserv-proxy + "/${
-                    if pkgs.stdenv.hostPlatform.isWindows
-                      then "windows"
-                      else if pkgs.stdenv.hostPlatform.isGhcjs
-                        then "ghcjs"
-                          else if pkgs.haskell-nix.haskellLib.isCrossHost
-                            then "cross"
-                            else "default"}/${compiler-nix-name}";
-                }
-                else {
-                  cabalProjectLocal = ''
-                    allow-newer: *:base, *:bytestring
-                  '';
-                }))).hsPkgs.iserv-proxy.components.exes;
-            in {
-              # We need the proxy for the build system and the interpreter for the target
-              inherit (exes final.pkgsBuildBuild) iserv-proxy;
-              inherit (exes final) iserv-proxy-interpreter;
-            }) final.haskell-nix.compiler;
 
         # Add this to your tests to make all the dependencies of haskell.nix
         # are tested and cached. Consider using `p.roots` where `p` is a
