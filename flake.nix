@@ -3,7 +3,7 @@
 
   inputs = {
     nixpkgs.follows = "nixpkgs-2411";
-    nixpkgs-2405 = { url = "github:NixOS/nixpkgs/release-24.11"; };
+    nixpkgs-2411 = { url = "github:NixOS/nixpkgs/release-24.11"; };
     flake-compat = { url = "github:input-output-hk/flake-compat/hkm/gitlab-fix"; flake = false; };
     hackage = {
       url = "github:kronor-io/hackage.nix/main";

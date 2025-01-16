@@ -1,5 +1,11 @@
 # `haskell.nix` is infrastructure for building Haskell packages with Nix
 
+This is a fork that builds only Cabal projects, uses ghc from upstream
+nixpkgs, and doesn't support cross platform builds / ghcjs builds. It
+was forked after we had to build every ghc from 8.10.7 to 9.8.2 one
+too many times. This fork also contains a fix that properly respects
+index-state in presence of revisions
+
 `haskell.nix` can automatically translate your Cabal or Stack project and
 its dependencies into Nix code.
 
@@ -14,7 +20,7 @@ its dependencies into Nix code.
 
 The #1 problem that people have when using `haskell.nix` is that they find themselves building GHC.
 This should not happen, but you *must* follow the `haskell.nix` setup instructions properly to avoid it.
-If you find this happening to you, please check that you have followed the 
+If you find this happening to you, please check that you have followed the
 [getting started instructions](https://input-output-hk.github.io/haskell.nix/tutorials/getting-started#setting-up-the-binary-cache) and
 consult the corresponding [troubleshooting section](https://input-output-hk.github.io/haskell.nix/troubleshooting#why-am-i-building-ghc).
 
