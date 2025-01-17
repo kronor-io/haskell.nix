@@ -31,7 +31,7 @@ let
 
   cabalFile = if package-description-override == null || bundledSrc != null then null else package-description-override;
 
-  defaultSetupSrc = if stdenv.hostPlatform.isGhcjs then ./Setup.ghcjs.hs else ./Setup.hs;
+  defaultSetupSrc = if stdenv.hostPlatform.isGhcjs then abort "No implementation for ghcjs" else ./Setup.hs;
 
   setup = if package.buildType == "Simple"
     then

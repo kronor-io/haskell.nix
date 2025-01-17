@@ -13,7 +13,7 @@ let
   haskellLib = final.haskell-nix.haskellLib;
   defaultSetupSrc =
     if final.stdenv.targetPlatform.isGhcjs
-      then ../builder/Setup.ghcjs.hs
+      then abort "No implementation for ghcjs"
       else ../builder/Setup.hs;
   addDefaultSetup = compiler-nix-name: ghc:
     let
