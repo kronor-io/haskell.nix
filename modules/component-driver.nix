@@ -24,7 +24,7 @@ in
 
   options.reinstallableLibGhc = lib.mkOption {
     type = lib.types.bool;
-    default = true;
+    default = false;
     description = "Is lib:ghc reinstallable?";
   };
   options.setup-depends = lib.mkOption {
@@ -58,10 +58,11 @@ in
       "array"
       "ghc-boot-th" "template-haskell"
       "ghc-boot" "ghc-platform" "ghc-internal" "ghc-heap" "ghc"
-      "system-cxx-std-lib" "pretty" "deepseq" "ghc-bignum"
+      "system-cxx-std-lib" "pretty" "deepseq" "ghc-bignum" "os-string"
 
       # ghcjs custom packages
-      "ghcjs-prim" "ghcjs-th"
+      "ghcjs-prim" "ghcjs-th" "bytestring" "exception" "mtl" "stm" "transformers"
+      "file-io" "directory" "process"
     ];
 
   options.bootPkgs = lib.mkOption {
@@ -70,14 +71,9 @@ in
 
   config.bootPkgs =  [
       "rts" "ghc-boot-th" "ghc-boot" "ghc-heap" "ghci"
-      "ghcjs-prim"
-   ] ++ lib.optional (!config.reinstallableLibGhc) "ghc"
-    ++ lib.optionals (
-      !__elem config.compiler.nix-name ["ghc865" "ghc881" "ghc882" "ghc883" "ghc884" "ghc8101" "ghc8102" "ghc8103" "ghc8104" "ghc8105" "ghc8106" "ghc8107"]) [
-      "ghc-bignum" ]
-    ++ lib.optionals (
-      !__elem config.compiler.nix-name ["ghc865" "ghc881" "ghc882" "ghc883" "ghc884" "ghc8101" "ghc8102" "ghc8103" "ghc8104" "ghc8105" "ghc8106" "ghc8107" "ghc901" "ghc902"]) [
-      "system-cxx-std-lib" ];
+      "ghcjs-prim" "ghc-bignum" "system-cxx-std-lib"
+      "ghc-platform"
+   ];
 
   options.hsPkgs = lib.mkOption {
     type = lib.types.unspecified;
