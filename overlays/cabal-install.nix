@@ -14,6 +14,7 @@ final: prev:
             package cabal-install
               tests: false
           '';
+          index-state = "2025-01-13T20:06:10Z";
         }
         (_: {
           "extra-hackages" = [];
