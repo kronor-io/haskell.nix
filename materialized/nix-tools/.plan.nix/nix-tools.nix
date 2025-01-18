@@ -190,6 +190,7 @@
             (hsPkgs."nix-tools" or (errorHandler.buildDepError "nix-tools"))
             (hsPkgs."nix-tools".components.sublibs.cabal2nix or (errorHandler.buildDepError "nix-tools:cabal2nix"))
             (hsPkgs."text" or (errorHandler.buildDepError "text"))
+            (hsPkgs."time" or (errorHandler.buildDepError "time"))
             (hsPkgs."transformers" or (errorHandler.buildDepError "transformers"))
           ];
           buildable = true;
