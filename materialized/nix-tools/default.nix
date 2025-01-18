@@ -619,6 +619,7 @@
           "directory-ospath-streaming".components.library.planned = lib.mkOverride 900 true;
           "ghc-boot-th".components.library.planned = lib.mkOverride 900 true;
           "data-default".components.library.planned = lib.mkOverride 900 true;
+          "nix-tools".components.sublibs."cabal2nix".planned = lib.mkOverride 900 true;
           "ansi-terminal".components.library.planned = lib.mkOverride 900 true;
           "xml".components.library.planned = lib.mkOverride 900 true;
           "terminfo".components.library.planned = lib.mkOverride 900 true;

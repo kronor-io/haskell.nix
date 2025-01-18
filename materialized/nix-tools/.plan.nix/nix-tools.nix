@@ -33,15 +33,15 @@
     components = {
       "library" = {
         depends = [
-          (hsPkgs."base" or (errorHandler.buildDepError "base"))
           (hsPkgs."Cabal" or (errorHandler.buildDepError "Cabal"))
           (hsPkgs."Cabal-syntax" or (errorHandler.buildDepError "Cabal-syntax"))
+          (hsPkgs."base" or (errorHandler.buildDepError "base"))
           (hsPkgs."aeson" or (errorHandler.buildDepError "aeson"))
           (hsPkgs."aeson-pretty" or (errorHandler.buildDepError "aeson-pretty"))
           (hsPkgs."base16-bytestring" or (errorHandler.buildDepError "base16-bytestring"))
           (hsPkgs."bytestring" or (errorHandler.buildDepError "bytestring"))
-          (hsPkgs."cryptohash-sha256" or (errorHandler.buildDepError "cryptohash-sha256"))
           (hsPkgs."containers" or (errorHandler.buildDepError "containers"))
+          (hsPkgs."cryptohash-sha256" or (errorHandler.buildDepError "cryptohash-sha256"))
           (hsPkgs."data-fix" or (errorHandler.buildDepError "data-fix"))
           (hsPkgs."deepseq" or (errorHandler.buildDepError "deepseq"))
           (hsPkgs."directory" or (errorHandler.buildDepError "directory"))
@@ -53,6 +53,7 @@
           (hsPkgs."http-client-tls" or (errorHandler.buildDepError "http-client-tls"))
           (hsPkgs."http-types" or (errorHandler.buildDepError "http-types"))
           (hsPkgs."network-uri" or (errorHandler.buildDepError "network-uri"))
+          (hsPkgs."nix-tools".components.sublibs.cabal2nix or (errorHandler.buildDepError "nix-tools:cabal2nix"))
           (hsPkgs."optparse-applicative" or (errorHandler.buildDepError "optparse-applicative"))
           (hsPkgs."prettyprinter" or (errorHandler.buildDepError "prettyprinter"))
           (hsPkgs."process" or (errorHandler.buildDepError "process"))
@@ -63,9 +64,6 @@
         ];
         buildable = true;
         modules = [
-          "Cabal2Nix"
-          "Cabal2Nix/Util"
-          "Cabal2Nix/Plan"
           "CabalName"
           "CabalName/CLI"
           "Distribution/Nixpkgs/Fetch"
@@ -80,19 +78,41 @@
         ];
         hsSourceDirs = [ "lib" ];
       };
+      sublibs = {
+        "cabal2nix" = {
+          depends = [
+            (hsPkgs."Cabal" or (errorHandler.buildDepError "Cabal"))
+            (hsPkgs."Cabal-syntax" or (errorHandler.buildDepError "Cabal-syntax"))
+            (hsPkgs."base" or (errorHandler.buildDepError "base"))
+            (hsPkgs."base16-bytestring" or (errorHandler.buildDepError "base16-bytestring"))
+            (hsPkgs."bytestring" or (errorHandler.buildDepError "bytestring"))
+            (hsPkgs."cryptohash-sha256" or (errorHandler.buildDepError "cryptohash-sha256"))
+            (hsPkgs."data-fix" or (errorHandler.buildDepError "data-fix"))
+            (hsPkgs."directory" or (errorHandler.buildDepError "directory"))
+            (hsPkgs."filepath" or (errorHandler.buildDepError "filepath"))
+            (hsPkgs."hnix" or (errorHandler.buildDepError "hnix"))
+            (hsPkgs."network-uri" or (errorHandler.buildDepError "network-uri"))
+            (hsPkgs."text" or (errorHandler.buildDepError "text"))
+          ];
+          buildable = true;
+          modules = [ "Cabal2Nix" "Cabal2Nix/Util" ];
+          hsSourceDirs = [ "lib-cabal2nix" ];
+        };
+      };
       exes = {
         "cabal-to-nix" = {
           depends = [
             (hsPkgs."base" or (errorHandler.buildDepError "base"))
-            (hsPkgs."transformers" or (errorHandler.buildDepError "transformers"))
             (hsPkgs."bytestring" or (errorHandler.buildDepError "bytestring"))
-            (hsPkgs."hpack" or (errorHandler.buildDepError "hpack"))
-            (hsPkgs."hnix" or (errorHandler.buildDepError "hnix"))
-            (hsPkgs."text" or (errorHandler.buildDepError "text"))
-            (hsPkgs."nix-tools" or (errorHandler.buildDepError "nix-tools"))
-            (hsPkgs."filepath" or (errorHandler.buildDepError "filepath"))
             (hsPkgs."directory" or (errorHandler.buildDepError "directory"))
+            (hsPkgs."filepath" or (errorHandler.buildDepError "filepath"))
+            (hsPkgs."hnix" or (errorHandler.buildDepError "hnix"))
+            (hsPkgs."hpack" or (errorHandler.buildDepError "hpack"))
+            (hsPkgs."nix-tools" or (errorHandler.buildDepError "nix-tools"))
+            (hsPkgs."nix-tools".components.sublibs.cabal2nix or (errorHandler.buildDepError "nix-tools:cabal2nix"))
             (hsPkgs."prettyprinter" or (errorHandler.buildDepError "prettyprinter"))
+            (hsPkgs."text" or (errorHandler.buildDepError "text"))
+            (hsPkgs."transformers" or (errorHandler.buildDepError "transformers"))
           ];
           buildable = true;
           hsSourceDirs = [ "cabal2nix" ];
@@ -101,15 +121,16 @@
         "hashes-to-nix" = {
           depends = [
             (hsPkgs."base" or (errorHandler.buildDepError "base"))
-            (hsPkgs."hnix" or (errorHandler.buildDepError "hnix"))
-            (hsPkgs."nix-tools" or (errorHandler.buildDepError "nix-tools"))
-            (hsPkgs."data-fix" or (errorHandler.buildDepError "data-fix"))
             (hsPkgs."aeson" or (errorHandler.buildDepError "aeson"))
+            (hsPkgs."data-fix" or (errorHandler.buildDepError "data-fix"))
+            (hsPkgs."directory" or (errorHandler.buildDepError "directory"))
+            (hsPkgs."filepath" or (errorHandler.buildDepError "filepath"))
+            (hsPkgs."hnix" or (errorHandler.buildDepError "hnix"))
             (hsPkgs."microlens" or (errorHandler.buildDepError "microlens"))
             (hsPkgs."microlens-aeson" or (errorHandler.buildDepError "microlens-aeson"))
+            (hsPkgs."nix-tools" or (errorHandler.buildDepError "nix-tools"))
+            (hsPkgs."nix-tools".components.sublibs.cabal2nix or (errorHandler.buildDepError "nix-tools:cabal2nix"))
             (hsPkgs."text" or (errorHandler.buildDepError "text"))
-            (hsPkgs."filepath" or (errorHandler.buildDepError "filepath"))
-            (hsPkgs."directory" or (errorHandler.buildDepError "directory"))
           ];
           buildable = true;
           hsSourceDirs = [ "hashes2nix" ];
@@ -117,24 +138,26 @@
         };
         "plan-to-nix" = {
           depends = [
-            (hsPkgs."base" or (errorHandler.buildDepError "base"))
-            (hsPkgs."nix-tools" or (errorHandler.buildDepError "nix-tools"))
-            (hsPkgs."hnix" or (errorHandler.buildDepError "hnix"))
             (hsPkgs."Cabal" or (errorHandler.buildDepError "Cabal"))
-            (hsPkgs."text" or (errorHandler.buildDepError "text"))
-            (hsPkgs."hpack" or (errorHandler.buildDepError "hpack"))
-            (hsPkgs."unordered-containers" or (errorHandler.buildDepError "unordered-containers"))
-            (hsPkgs."vector" or (errorHandler.buildDepError "vector"))
+            (hsPkgs."Cabal-syntax" or (errorHandler.buildDepError "Cabal-syntax"))
+            (hsPkgs."base" or (errorHandler.buildDepError "base"))
             (hsPkgs."aeson" or (errorHandler.buildDepError "aeson"))
+            (hsPkgs."bytestring" or (errorHandler.buildDepError "bytestring"))
+            (hsPkgs."directory" or (errorHandler.buildDepError "directory"))
+            (hsPkgs."extra" or (errorHandler.buildDepError "extra"))
+            (hsPkgs."filepath" or (errorHandler.buildDepError "filepath"))
+            (hsPkgs."hnix" or (errorHandler.buildDepError "hnix"))
+            (hsPkgs."hpack" or (errorHandler.buildDepError "hpack"))
             (hsPkgs."microlens" or (errorHandler.buildDepError "microlens"))
             (hsPkgs."microlens-aeson" or (errorHandler.buildDepError "microlens-aeson"))
+            (hsPkgs."nix-tools" or (errorHandler.buildDepError "nix-tools"))
+            (hsPkgs."nix-tools".components.sublibs.cabal2nix or (errorHandler.buildDepError "nix-tools:cabal2nix"))
             (hsPkgs."optparse-applicative" or (errorHandler.buildDepError "optparse-applicative"))
             (hsPkgs."prettyprinter" or (errorHandler.buildDepError "prettyprinter"))
-            (hsPkgs."filepath" or (errorHandler.buildDepError "filepath"))
-            (hsPkgs."directory" or (errorHandler.buildDepError "directory"))
-            (hsPkgs."bytestring" or (errorHandler.buildDepError "bytestring"))
+            (hsPkgs."text" or (errorHandler.buildDepError "text"))
             (hsPkgs."transformers" or (errorHandler.buildDepError "transformers"))
-            (hsPkgs."extra" or (errorHandler.buildDepError "extra"))
+            (hsPkgs."unordered-containers" or (errorHandler.buildDepError "unordered-containers"))
+            (hsPkgs."vector" or (errorHandler.buildDepError "vector"))
           ];
           buildable = true;
           modules = [
@@ -149,22 +172,24 @@
         };
         "hackage-to-nix" = {
           depends = [
-            (hsPkgs."base" or (errorHandler.buildDepError "base"))
-            (hsPkgs."nix-tools" or (errorHandler.buildDepError "nix-tools"))
-            (hsPkgs."hackage-db" or (errorHandler.buildDepError "hackage-db"))
-            (hsPkgs."hnix" or (errorHandler.buildDepError "hnix"))
             (hsPkgs."Cabal" or (errorHandler.buildDepError "Cabal"))
+            (hsPkgs."Cabal-syntax" or (errorHandler.buildDepError "Cabal-syntax"))
+            (hsPkgs."base" or (errorHandler.buildDepError "base"))
             (hsPkgs."aeson" or (errorHandler.buildDepError "aeson"))
             (hsPkgs."aeson-pretty" or (errorHandler.buildDepError "aeson-pretty"))
-            (hsPkgs."containers" or (errorHandler.buildDepError "containers"))
-            (hsPkgs."bytestring" or (errorHandler.buildDepError "bytestring"))
-            (hsPkgs."text" or (errorHandler.buildDepError "text"))
-            (hsPkgs."time" or (errorHandler.buildDepError "time"))
-            (hsPkgs."cryptohash-sha256" or (errorHandler.buildDepError "cryptohash-sha256"))
             (hsPkgs."base16-bytestring" or (errorHandler.buildDepError "base16-bytestring"))
             (hsPkgs."base64-bytestring" or (errorHandler.buildDepError "base64-bytestring"))
-            (hsPkgs."filepath" or (errorHandler.buildDepError "filepath"))
+            (hsPkgs."bytestring" or (errorHandler.buildDepError "bytestring"))
+            (hsPkgs."Cabal" or (errorHandler.buildDepError "Cabal"))
+            (hsPkgs."containers" or (errorHandler.buildDepError "containers"))
+            (hsPkgs."cryptohash-sha256" or (errorHandler.buildDepError "cryptohash-sha256"))
             (hsPkgs."directory" or (errorHandler.buildDepError "directory"))
+            (hsPkgs."filepath" or (errorHandler.buildDepError "filepath"))
+            (hsPkgs."hackage-db" or (errorHandler.buildDepError "hackage-db"))
+            (hsPkgs."hnix" or (errorHandler.buildDepError "hnix"))
+            (hsPkgs."nix-tools" or (errorHandler.buildDepError "nix-tools"))
+            (hsPkgs."nix-tools".components.sublibs.cabal2nix or (errorHandler.buildDepError "nix-tools:cabal2nix"))
+            (hsPkgs."text" or (errorHandler.buildDepError "text"))
             (hsPkgs."transformers" or (errorHandler.buildDepError "transformers"))
           ];
           buildable = true;
@@ -175,6 +200,7 @@
           depends = [
             (hsPkgs."base" or (errorHandler.buildDepError "base"))
             (hsPkgs."nix-tools" or (errorHandler.buildDepError "nix-tools"))
+            (hsPkgs."nix-tools".components.sublibs.cabal2nix or (errorHandler.buildDepError "nix-tools:cabal2nix"))
             (hsPkgs."hnix" or (errorHandler.buildDepError "hnix"))
             (hsPkgs."yaml" or (errorHandler.buildDepError "yaml"))
             (hsPkgs."aeson" or (errorHandler.buildDepError "aeson"))
@@ -188,6 +214,7 @@
             (hsPkgs."Cabal" or (errorHandler.buildDepError "Cabal"))
           ];
           buildable = true;
+          modules = [ "Cabal2Nix/Plan" ];
           hsSourceDirs = [ "lts2nix" ];
           mainPath = [ "Main.hs" ];
         };
@@ -203,11 +230,11 @@
         "truncate-index" = {
           depends = [
             (hsPkgs."base" or (errorHandler.buildDepError "base"))
-            (hsPkgs."optparse-applicative" or (errorHandler.buildDepError "optparse-applicative"))
-            (hsPkgs."zlib" or (errorHandler.buildDepError "zlib"))
-            (hsPkgs."tar" or (errorHandler.buildDepError "tar"))
             (hsPkgs."bytestring" or (errorHandler.buildDepError "bytestring"))
+            (hsPkgs."optparse-applicative" or (errorHandler.buildDepError "optparse-applicative"))
+            (hsPkgs."tar" or (errorHandler.buildDepError "tar"))
             (hsPkgs."time" or (errorHandler.buildDepError "time"))
+            (hsPkgs."zlib" or (errorHandler.buildDepError "zlib"))
           ];
           buildable = true;
           hsSourceDirs = [ "truncate-index" ];
@@ -233,22 +260,23 @@
         };
         "make-install-plan" = {
           depends = [
-            (hsPkgs."base" or (errorHandler.buildDepError "base"))
-            (hsPkgs."bytestring" or (errorHandler.buildDepError "bytestring"))
             (hsPkgs."Cabal" or (errorHandler.buildDepError "Cabal"))
+            (hsPkgs."Cabal-syntax" or (errorHandler.buildDepError "Cabal-syntax"))
             (hsPkgs."cabal-install" or (errorHandler.buildDepError "cabal-install"))
             (hsPkgs."cabal-install-solver" or (errorHandler.buildDepError "cabal-install-solver"))
-            (hsPkgs."Cabal-syntax" or (errorHandler.buildDepError "Cabal-syntax"))
+            (hsPkgs."base" or (errorHandler.buildDepError "base"))
+            (hsPkgs."bytestring" or (errorHandler.buildDepError "bytestring"))
             (hsPkgs."containers" or (errorHandler.buildDepError "containers"))
+            (hsPkgs."directory" or (errorHandler.buildDepError "directory"))
             (hsPkgs."filepath" or (errorHandler.buildDepError "filepath"))
             (hsPkgs."hnix" or (errorHandler.buildDepError "hnix"))
-            (hsPkgs."nix-tools" or (errorHandler.buildDepError "nix-tools"))
+            (hsPkgs."nix-tools".components.sublibs.cabal2nix or (errorHandler.buildDepError "nix-tools:cabal2nix"))
             (hsPkgs."prettyprinter" or (errorHandler.buildDepError "prettyprinter"))
             (hsPkgs."text" or (errorHandler.buildDepError "text"))
           ];
           buildable = true;
-          modules = [ "Freeze" ];
-          hsSourceDirs = [ "make-install-plan" "plan2nix" ];
+          modules = [ "Freeze" "ProjectPlanOutput" ];
+          hsSourceDirs = [ "make-install-plan" ];
           mainPath = [ "MakeInstallPlan.hs" ];
         };
       };
