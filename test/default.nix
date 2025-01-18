@@ -208,7 +208,7 @@ let
     coverage-no-libs = callTest ./coverage-no-libs {};
     snapshots = callTest ./snapshots {};
     sublib-docs = callTest ./sublib-docs { inherit util; };
-    githash = haskell-nix.callPackage ./githash { inherit compiler-nix-name evalPackages; testSrc = testSrcWithGitDir; };
+    githash = callTest ./githash { inherit compiler-nix-name evalPackages; };
     c-ffi = callTest ./c-ffi { inherit util; };
     th-dlls = callTest ./th-dlls { inherit util; };
     external-static-plugin = callTest ./external-static-plugin {};
