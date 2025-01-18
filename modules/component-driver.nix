@@ -62,7 +62,7 @@ in
 
       # ghcjs custom packages
       "ghcjs-prim" "ghcjs-th" "bytestring" "exception" "mtl" "stm" "transformers"
-      "file-io" "directory" "process"
+      "file-io" "directory" "process" "filepath" "time" "unix"
     ];
 
   options.bootPkgs = lib.mkOption {

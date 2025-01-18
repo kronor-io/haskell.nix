@@ -1,7 +1,3 @@
--- index-state: 2023-07-16T00:00:00Z
-
--- with-compiler: ghc-9.2.8
-
 packages: nix-tools
 semaphore: true
 
@@ -45,6 +41,7 @@ source-repository-package
   type: git
   location: https://github.com/kronor-io/hackage-db.git
   tag: 83f819cb08742d3c86a83b407d45c1f6c1c7e299
+  --sha256: 11g395vrrsaasl1ssk8qfbcc9wx6aygipsldyclgn4szpm4xzm7h
 
 constraints:
   th-abstraction == 0.7.1.0

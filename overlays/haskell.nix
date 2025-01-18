@@ -407,12 +407,19 @@ final: prev: {
         # separately from the hsPkgs.  The advantage is that the you can get the
         # plan-nix without building the project.
         cabalProject' =
-          projectModule: haskellLib.evalProjectModule ../modules/cabal-project.nix projectModule (
+          projectModule:
+            cabalProjectWithPlan projectModule callCabalProjectToNix;
+
+        # This function is like `cabalProject` but it makes the plan-nix available
+        # separately from the hsPkgs.  The advantage is that the you can get the
+        # plan-nix without building the project.
+        cabalProjectWithPlan =
+          projectModule: nixPlanner: haskellLib.evalProjectModule ../modules/cabal-project.nix projectModule (
             { config, options, ... }:
             let
               inherit (config) compiler-nix-name compilerSelection evalPackages index-state;
 
-              callProjectResults = callCabalProjectToNix config;
+              callProjectResults = nixPlanner config;
               plan-pkgs = importAndFilterProject {
                 inherit (callProjectResults) projectNix sourceRepos src;
               };
