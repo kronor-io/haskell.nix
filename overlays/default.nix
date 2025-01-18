@@ -1,7 +1,32 @@
 { sources }:
 let
   overlays = {
-    cabal-install-overlay = final: prev: { bootstrap-cabal-install = final.callPackage ./cabal-install.nix {};};
+    cabal-install-overlay = final: prev:
+      { bootstrap-cabal-install =
+          let
+            cabal-install-src = final.pkgs.fetchurl {
+                  url = "https://hackage.haskell.org/package/cabal-install-3.14.1.1/cabal-install-3.14.1.1.tar.gz";
+                  sha256 = "sha256-8R02Srh/tGJ1qYfmBFOFdzIUd4CoxZJGDuyKFtu2us4=";
+                };
+            cabal-install-pkgs = final.haskell-nix.cabalProjectWithPlan
+              { src = cabal-install-src;
+                compiler-nix-name = "ghc912";
+                cabalProject = ''
+                  packages:
+                    ./cabal-install.cabal
+                  package cabal-install
+                    tests: false
+                '';
+              }
+              (_: {
+                "extra-hackages" = [];
+                "index-state-max" = "2025-01-17T00:00:00Z";
+                "projectNix" = ../materialized/cabal-install-3.14.1.1;
+                "sourceRepos" = [];
+                "src" = cabal-install-src;
+              });
+          in cabal-install-pkgs.hsPkgs.cabal-install.components.exes.cabal;
+      };
 
     haskell = import ./haskell.nix { inherit sources; };
 
@@ -17,16 +42,30 @@ let
       {
         haskell-nix =
           prev.haskell-nix // {
-            nix-tools = {
-              exes =
-                  {
-                    truncate-index = nix-tools-exes;
-                    make-install-plan = nix-tools-exes;
-                    plan-to-nix = nix-tools-exes;
-                    hackage-to-nix = nix-tools-exes;
-                  };
-              inherit nix-tools-exes;
-            };
+            nix-tools =
+              let nix-tools-pkgs = final.haskell-nix.cabalProjectWithPlan
+                    { src = ../nix-tools; compiler-nix-name = "ghc912"; }
+                    (_: {
+                    "extra-hackages" = [];
+                    "index-state-max" = "2025-01-17T00:00:00Z";
+                    "projectNix" = ../materialized/nix-tools;
+                    "sourceRepos" = [
+                      (final.pkgs.fetchgit {
+                        url = "https://github.com/kronor-io/hackage-db";
+                        sha256 = "11g395vrrsaasl1ssk8qfbcc9wx6aygipsldyclgn4szpm4xzm7h";
+                        rev = "83f819cb08742d3c86a83b407d45c1f6c1c7e299";
+                      })
+                    ];
+                    "src" = ../nix-tools;
+                    });
+              in {
+                exes = {
+                  truncate-index = nix-tools-pkgs.hsPkgs.nix-tools.components.exes.truncate-index;
+                  make-install-plan = nix-tools-pkgs.hsPkgs.nix-tools.components.exes.make-install-plan;
+                  plan-to-nix = nix-tools-pkgs.hsPkgs.nix-tools.components.exes.plan-to-nix;
+                  hackage-to-nix = nix-tools-pkgs.hsPkgs.nix-tools.components.exes.hackage-to-nix;
+                };
+              };
           };
       });
 
