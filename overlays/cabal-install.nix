@@ -1,38 +1,26 @@
-{ stdenv, fetchurl, lib }:
-
-stdenv.mkDerivation rec {
-  pname = "cabal-install";
-  version = "3.14.1.1";
-
-  src = fetchurl {
-    url = "https://downloads.haskell.org/~cabal/cabal-install-${version}/cabal-install-${version}-x86_64-linux-alpine3_18.tar.xz";
-    sha256 = "sha256-KA273YDQ3grmr0dkNghQkUjLLs8JZ80lW1q8skHZWd4=";
-  };
-
-  # Prevent Nix from automatically unpacking the source
-  dontUnpack = true;
-
-  # No build steps are required
-  buildPhase = "";
-
-  installPhase = ''
-    mkdir -p $out/bin
-    # Manually extract the tarball
-    tar -xJf ${src}
-    # Move the 'cabal' binary to $out/bin
-    cp -v cabal $out/bin/
-    # Ensure the binary is executable
-    chmod +x $out/bin/cabal
-  '';
-
-  # No dependencies are needed since the binary is statically linked
-  buildInputs = [];
-
-  meta = with lib; {
-    description = "The cabal-install tool (binary distribution)";
-    homepage = "https://www.haskell.org/cabal/";
-    license = licenses.bsd3;
-    platforms = platforms.linux;
-    maintainers = [];
-  };
+final: prev:
+{ bootstrap-cabal-install =
+    let
+      cabal-install-src = final.pkgs.fetchurl {
+            url = "https://hackage.haskell.org/package/cabal-install-3.14.1.1/cabal-install-3.14.1.1.tar.gz";
+            sha256 = "sha256-8R02Srh/tGJ1qYfmBFOFdzIUd4CoxZJGDuyKFtu2us4=";
+          };
+      cabal-install-pkgs = final.haskell-nix.cabalProjectWithPlan
+        { src = cabal-install-src;
+          compiler-nix-name = "ghc912";
+          cabalProject = ''
+            packages:
+              ./cabal-install.cabal
+            package cabal-install
+              tests: false
+          '';
+        }
+        (_: {
+          "extra-hackages" = [];
+          "index-state-max" = "2025-01-17T00:00:00Z";
+          "projectNix" = ../materialized/cabal-install-3.14.1.1;
+          "sourceRepos" = [];
+          "src" = cabal-install-src;
+        });
+    in cabal-install-pkgs.hsPkgs.cabal-install.components.exes.cabal;
 }

@@ -1,40 +1,30 @@
-{ stdenv, fetchurl, lib }:
-
-stdenv.mkDerivation rec {
-  pname = "nix-tools";
-  version = "0.1.0.0";
-
-  src = fetchurl {
-    url = "https://pgnb.s3.ap-south-2.amazonaws.com/nix-tools-alpine-amd.tar.xz";
-    sha256 = "sha256-/qff9cYlWGvlWPHgsgC9OXxidK4lrF754u91gh9BbTA=";
-  };
-
-  # Prevent Nix from automatically unpacking the source
-  dontUnpack = true;
-
-  # No build steps are required
-  buildPhase = "";
-
-  installPhase = ''
-    mkdir -p $out/bin
-    # Manually extract the tarball
-    tar -xJf ${src}
-
-    # Move all binaries to $out/bin
-    find ./dist-newstyle/ -type f -executable | xargs -I {} cp -v {} $out/bin/
-
-    # Ensure the binaries are executable
-    chmod +x $out/bin/*
-  '';
-
-  # No dependencies are needed since the binary is statically linked
-  buildInputs = [];
-
-  meta = with lib; {
-    description = "nix-tools";
-    homepage = "https://github.com/input-output-hk/haskell.nix";
-    license = licenses.bsd3;
-    platforms = platforms.linux;
-    maintainers = [];
-  };
+final: prev:
+{
+  haskell-nix =
+    prev.haskell-nix // {
+      nix-tools =
+        let nix-tools-pkgs = final.haskell-nix.cabalProjectWithPlan
+              { src = ../nix-tools; compiler-nix-name = "ghc912"; }
+              (_: {
+              "extra-hackages" = [];
+              "index-state-max" = "2025-01-17T00:00:00Z";
+              "projectNix" = ../materialized/nix-tools;
+              "sourceRepos" = [
+                (final.pkgs.fetchgit {
+                  url = "https://github.com/kronor-io/hackage-db";
+                  sha256 = "11g395vrrsaasl1ssk8qfbcc9wx6aygipsldyclgn4szpm4xzm7h";
+                  rev = "83f819cb08742d3c86a83b407d45c1f6c1c7e299";
+                })
+              ];
+              "src" = ../nix-tools;
+              });
+        in {
+          exes = {
+            truncate-index = nix-tools-pkgs.hsPkgs.nix-tools.components.exes.truncate-index;
+            make-install-plan = nix-tools-pkgs.hsPkgs.nix-tools.components.exes.make-install-plan;
+            plan-to-nix = nix-tools-pkgs.hsPkgs.nix-tools.components.exes.plan-to-nix;
+            hackage-to-nix = nix-tools-pkgs.hsPkgs.nix-tools.components.exes.hackage-to-nix;
+          };
+        };
+    };
 }
