@@ -383,6 +383,36 @@
       };
     };
   modules = [
+    {
+      preExistingPkgs = [
+        "integer-gmp"
+        "filepath"
+        "semaphore-compat"
+        "ghc-bignum"
+        "stm"
+        "transformers"
+        "terminfo"
+        "deepseq"
+        "directory"
+        "file-io"
+        "mtl"
+        "process"
+        "base"
+        "system-cxx-std-lib"
+        "time"
+        "array"
+        "ghc-internal"
+        "template-haskell"
+        "unix"
+        "exceptions"
+        "bytestring"
+        "ghc-boot-th"
+        "os-string"
+        "ghc-prim"
+        "pretty"
+        "rts"
+      ];
+    }
     ({ lib, ... }:
       {
         packages = {

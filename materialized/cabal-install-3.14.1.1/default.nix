@@ -125,6 +125,39 @@
   extras = hackage:
     { packages = { cabal-install = ./.plan.nix/cabal-install.nix; }; };
   modules = [
+    {
+      preExistingPkgs = [
+        "filepath"
+        "semaphore-compat"
+        "ghc-bignum"
+        "stm"
+        "transformers"
+        "deepseq"
+        "directory"
+        "file-io"
+        "parsec"
+        "Cabal"
+        "mtl"
+        "process"
+        "base"
+        "Cabal-syntax"
+        "text"
+        "time"
+        "array"
+        "ghc-internal"
+        "binary"
+        "template-haskell"
+        "unix"
+        "exceptions"
+        "bytestring"
+        "ghc-boot-th"
+        "os-string"
+        "ghc-prim"
+        "pretty"
+        "containers"
+        "rts"
+      ];
+    }
     ({ lib, ... }:
       {
         packages = {

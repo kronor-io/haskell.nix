@@ -424,7 +424,7 @@ final: prev: {
                 inherit (callProjectResults) projectNix sourceRepos src;
               };
               buildProject = if final.stdenv.hostPlatform != final.stdenv.buildPlatform
-                then final.buildPackages.haskell-nix.cabalProject' projectModule
+                then final.pkgsBuildBuild.haskell-nix.cabalProject' projectModule
                 else project;
               pkg-set = if plan-pkgs ? configurationError
                 then {

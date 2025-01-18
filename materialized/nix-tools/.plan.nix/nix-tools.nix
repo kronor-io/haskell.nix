@@ -265,9 +265,9 @@
             (hsPkgs."tasty-golden" or (errorHandler.buildDepError "tasty-golden"))
           ];
           build-tools = [
-            (hsPkgs.buildPackages.nix-tools.components.exes.make-install-plan or (pkgs.buildPackages.make-install-plan or (errorHandler.buildToolDepError "nix-tools:make-install-plan")))
-            (hsPkgs.buildPackages.nix-tools.components.exes.plan-to-nix or (pkgs.buildPackages.plan-to-nix or (errorHandler.buildToolDepError "nix-tools:plan-to-nix")))
-            (hsPkgs.buildPackages.cabal-install.components.exes.cabal or (pkgs.buildPackages.cabal or (errorHandler.buildToolDepError "cabal-install:cabal")))
+            (hsPkgs.pkgsBuildBuild.nix-tools.components.exes.make-install-plan or (pkgs.pkgsBuildBuild.make-install-plan or (errorHandler.buildToolDepError "nix-tools:make-install-plan")))
+            (hsPkgs.pkgsBuildBuild.nix-tools.components.exes.plan-to-nix or (pkgs.pkgsBuildBuild.plan-to-nix or (errorHandler.buildToolDepError "nix-tools:plan-to-nix")))
+            (hsPkgs.pkgsBuildBuild.cabal-install.components.exes.cabal or (pkgs.pkgsBuildBuild.cabal or (errorHandler.buildToolDepError "cabal-install:cabal")))
           ];
           buildable = true;
           hsSourceDirs = [ "tests" ];
