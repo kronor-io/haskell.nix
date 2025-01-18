@@ -6,12 +6,8 @@ was forked after we had to build every ghc from 8.10.7 to 9.8.2 one
 too many times. This fork also contains a bug fix that properly
 respects index-state in presence of revisions.
 
-There is a bug that is carried on from haskell.nix repo, where pinning
-a different version of a ghc core library will silently fail i.e. the
-plan succeeds but it'll always use the library shipped with the ghc
-version which can be misleading.
-
-
+Commits that affect nix-tools/ haskell package build process are
+cherry picked from upstream
 
 `haskell.nix` can automatically translate your Cabal or Stack project and
 its dependencies into Nix code.
