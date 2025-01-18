@@ -4,7 +4,7 @@ final: prev:
     prev.haskell-nix // {
       nix-tools =
         let nix-tools-pkgs = final.haskell-nix.cabalProjectWithPlan
-              { src = ../nix-tools; compiler-nix-name = "ghc912"; }
+              { src = ../nix-tools; compiler-nix-name = "ghc912"; index-state = "2025-01-13T20:06:10Z"; }
               (_: {
               "extra-hackages" = [];
               "index-state-max" = "2025-01-17T00:00:00Z";
