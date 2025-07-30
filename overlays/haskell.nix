@@ -333,7 +333,7 @@ final: prev: {
             inherit (final.haskell-nix) indexStateHashesPath;
             inherit (final) coreutils nix writeShellScriptBin stdenv lib curl;
             # Update scripts use the internal nix-tools (compiled with a fixed GHC version)
-            nix-tools = final.haskell-nix.nix-tools-unchecked;
+            truncate-index = final.haskell-nix.nix-tools.exes.truncate-index;
         };
 
         # given a source location call `cabal-to-nix` (from nix-tools) on it
