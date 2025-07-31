@@ -171,7 +171,7 @@ pkgs:
     "stdc++.dll"                         = []; # What is that?
     "systemd-journal"                    = [ "systemd" ];
     "tag_c"                              = [ "taglib" ];
-    "webkit2gtk"                         = [ "webkitgtk_4_0" ]; # This is somewhat arbitary
+    "webkit2gtk"                         = [ "webkitgtk_4_1" ]; # This is somewhat arbitary
     "xml2"                               = [ "libxml2" ];
     "yaml"                               = [ "libyaml" ];
     "z"                                  = [ "zlib" ];
@@ -5497,9 +5497,9 @@ pkgs:
     "wayland-server++" = [ "waylandpp" ];
     "wcslib" = [ "wcslib" ];
     "webkit2-sharp-4.0" = [ "webkit2-sharp" ];
-    "javascriptcoregtk-4.0" = [ "webkitgtk_4_0" ];
-    "webkit2gtk-4.0" = [ "webkitgtk_4_0" ];
-    "webkit2gtk-web-extension-4.0" = [ "webkitgtk_4_0" ];
+    "javascriptcoregtk-4.0" = [ "webkitgtk_4_1" ];
+    "webkit2gtk-4.0" = [ "webkitgtk_4_1" ];
+    "webkit2gtk-web-extension-4.0" = [ "webkitgtk_4_1" ];
     "javascriptcoregtk-4.1" = [ "webkitgtk_4_1" ];
     "webkit2gtk-4.1" = [ "webkitgtk_4_1" ];
     "webkit2gtk-web-extension-4.1" = [ "webkitgtk_4_1" ];
