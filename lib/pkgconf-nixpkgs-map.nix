@@ -1694,7 +1694,6 @@ pkgs:
     "getdns" = [ "getdns" ];
     "gexiv2" = [ "gexiv2" ];
     "gf2x" = [ "gf2x" ];
-    "libgfbgraph-0.2" = [ "gfbgraph" ];
     "gflags" = [ "gflags" ];
     "libgfshare" = [ "gfshare" ];
     "ggobi" = [ "ggobi" ];
@@ -1753,7 +1752,6 @@ pkgs:
 #    "gmime-2.6" = [ "gmime" ];
     "gmime-2.6" = [ "gmime2" ];
     "gmime-3.0" = [ "gmime3" ];
-    "libgmni" = [ "gmni" ];
     "gmp" = [ "gmp" ];
     "gmpxx" = [ "gmp" ];
 #    "gmp" = [ "gmp6" ];
@@ -2073,7 +2071,6 @@ pkgs:
     "libgsasl" = [ "gsasl" ];
     "gsettings-desktop-schemas" = [ "gsettings-desktop-schemas" ];
     "gsettings-qt" = [ "gsettings-qt" ];
-    "gsignond" = [ "gsignond" ];
     "gsl" = [ "gsl" ];
 #    "gsl" = [ "gsl_1" ];
     "gsoapck" = [ "gsoap" ];
@@ -2154,7 +2151,6 @@ pkgs:
     "peasd-3" = [ "gtkd" ];
     "vted-3" = [ "gtkd" ];
     "gtkdatabox" = [ "gtkdatabox" ];
-    "gtkextra-3.0" = [ "gtkextra" ];
     "gtkimageview" = [ "gtkimageview" ];
     "gdkmm-2.4" = [ "gtkmm2" ];
     "gtkmm-2.4" = [ "gtkmm2" ];
@@ -2738,12 +2734,12 @@ pkgs:
     "gaminggear-0" = [ "libgaminggear" ];
     "libgbinder" = [ "libgbinder" ];
     "libgcrypt" = [ "libgcrypt" ];
-    "libgda-5.0" = [ "libgda" ];
-    "libgda-report-5.0" = [ "libgda" ];
-    "libgda-sqlcipher-5.0" = [ "libgda" ];
-    "libgda-sqlite-5.0" = [ "libgda" ];
-    "libgda-ui-5.0" = [ "libgda" ];
-    "libgda-xslt-5.0" = [ "libgda" ];
+    "libgda-5.0" = [ "libgda5" ];
+    "libgda-report-5.0" = [ "libgda5" ];
+    "libgda-sqlcipher-5.0" = [ "libgda5" ];
+    "libgda-sqlite-5.0" = [ "libgda5" ];
+    "libgda-ui-5.0" = [ "libgda5" ];
+    "libgda-xslt-5.0" = [ "libgda5" ];
     "libgda-6.0" = [ "libgda6" ];
     "libgda-sqlite-6.0" = [ "libgda6" ];
     "libgdamm-5.0" = [ "libgdamm" ];
@@ -2783,7 +2779,6 @@ pkgs:
     "libgpod-1.0" = [ "libgpod" ];
     "libgpod-sharp" = [ "libgpod" ];
     "libgringotts" = [ "libgringotts" ];
-    "libgrss" = [ "libgrss" ];
     "libgsf-1" = [ "libgsf" ];
     "libgssglue" = [ "libgssglue" ];
     "gflow-0.8" = [ "libgtkflow" ];
@@ -2809,7 +2804,6 @@ pkgs:
 #    "krb5-gssapi" = [ "libheimdal" ];
 #    "krb5" = [ "libheimdal" ];
     "libhsts" = [ "libhsts" ];
-    "httpseverywhere-0.8" = [ "libhttpseverywhere" ];
     "libhwy-contrib" = [ "libhwy" ];
     "libhwy" = [ "libhwy" ];
     "libhwy-test" = [ "libhwy" ];
@@ -3061,7 +3055,6 @@ pkgs:
     "libraw1394" = [ "libraw1394" ];
 #    "libraw" = [ "libraw_unstable" ];
 #    "libraw_r" = [ "libraw_unstable" ];
-    "raptor" = [ "librdf_raptor" ];
     "raptor2" = [ "librdf_raptor2" ];
     "rasqal" = [ "librdf_rasqal" ];
 #    "redland" = [ "librdf_redland" ];
@@ -3347,7 +3340,6 @@ pkgs:
     "libyang" = [ "libyang" ];
     "ykneomgr" = [ "libykneomgr" ];
     "libytnef" = [ "libytnef" ];
-    "zapojit-0.0" = [ "libzapojit" ];
     "zdb" = [ "libzdb" ];
     "libzen" = [ "libzen" ];
     "libzim" = [ "libzim" ];
@@ -4160,7 +4152,6 @@ pkgs:
     "primesieve" = [ "primesieve" ];
     "libprocps" = [ "procps" ];
     "proj" = [ "proj" ];
-    "libprojectM" = [ "projectm" ];
     "prometheus-cpp-core" = [ "prometheus-cpp" ];
     "prometheus-cpp" = [ "prometheus-cpp" ];
     "prometheus-cpp-pull" = [ "prometheus-cpp" ];
@@ -4188,9 +4179,7 @@ pkgs:
 #    "libpulse" = [ "pulseaudioFull" ];
 #    "libpulse-simple" = [ "pulseaudioFull" ];
     "pd" = [ "puredata" ];
-    "pxlib" = [ "pxlib" ];
     "py3c" = [ "py3c" ];
-    "pynac" = [ "pynac" ];
     "apiextractor" = [ "pysideApiextractor" ];
     "generatorrunner" = [ "pysideGeneratorrunner" ];
 #    "python-2.7" = [ "python2" ];
@@ -5063,7 +5052,6 @@ pkgs:
     "spice-client-glib-2.0" = [ "spice-gtk" ];
     "spice-client-gtk-3.0" = [ "spice-gtk" ];
     "spice-protocol" = [ "spice-protocol" ];
-    "mozjs-78" = [ "spidermonkey_78" ];
     "mozjs-91" = [ "spidermonkey_91" ];
     "riscv-disasm" = [ "spike" ];
     "riscv-fesvr" = [ "spike" ];
@@ -5190,7 +5178,6 @@ pkgs:
     "tdutils" = [ "tdlib" ];
     "telepathy-farstream" = [ "telepathy-farstream" ];
     "telepathy-glib" = [ "telepathy-glib" ];
-    "telepathy-logger-0.2" = [ "telepathy-logger" ];
     "mission-control-plugins" = [ "telepathy-mission-control" ];
     "template-glib-1.0" = [ "template-glib" ];
     "tepl-6" = [ "tepl" ];
@@ -5712,8 +5699,6 @@ pkgs:
       else if pkgs ? gdk_pixbuf
         then [ pkgs.gdk_pixbuf ]
       else [];
-    # rocm-thunk was replaced by rocmPackages.rocm-thunk in 23.11
-    "libhsakmt" = [ pkgs.rocmPackages.rocm-thunk or pkgs.rocm-thunk ];
 } // lib.optionalAttrs (pkgs ? libsigcxx12) {
     # libsigcxx12 was removed in 23.11
     "sigc++-1.2" = [ "libsigcxx12" ];
