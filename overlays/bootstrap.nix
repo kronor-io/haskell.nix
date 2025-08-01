@@ -4,6 +4,7 @@ let
 
     latestVer = {
       "9.8" = "9.8.1";
+      "9.12" = "9.12.2";
     };
 
 in {
@@ -17,7 +18,7 @@ in {
       ghc982 = final.haskell.compiler.ghc982;
 
       ghc912 = final.haskell.compiler.ghc912;
-      ghc9121 = final.haskell.compiler.ghc912;
+      ghc9122 = final.haskell.compiler.ghc912;
         };
 
     # Both `cabal-install` and `nix-tools` are needed for `cabalProject`
