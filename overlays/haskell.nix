@@ -119,7 +119,7 @@ final: prev: {
                 modules = [ { doExactConfig = true; } ]
                        ++ modules
                        ++ plan-pkgs.modules or [];
-                inherit extra-hackages;
+                extra-hackages = extra-hackages ++ [ (import ../extra-hackages) ] ;
             };
 
         # Creates Cabal local repository from { name, index } set.

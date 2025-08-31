@@ -79,7 +79,7 @@
         builtins.mapAttrs (name: exe: {
           type = "app";
           program = exe + "/bin/${name}";
-        }) pkgs.haskell-nix.nix-tools.exes
+        }) (pkgs.haskell-nix.nix-tools.exes // { "cabal" = pkgs.haskell-nix.bootstrap-cabal-install; })
       );
     };
 
