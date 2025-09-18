@@ -20,11 +20,11 @@
     "hackage": {
       "flake": false,
       "locked": {
-        "lastModified": 1758069642,
-        "narHash": "sha256-BymOWDQ4naWL+IHIgkIdJKO1PlDv2rM0nG4Kbhgsc+g=",
+        "lastModified": 1758156096,
+        "narHash": "sha256-8R82pXseKQ9sAmPcs/rct7/JCmYw0FdkU2KMZzaAU0c=",
         "owner": "kronor-io",
         "repo": "hackage.nix",
-        "rev": "b1619727711bb2a0770885e5d5c1567ac6bfde5d",
+        "rev": "6943f6a16d80a4cc1947cbc4a9667ea175e86e0e",
         "type": "github"
       },
       "original": {
