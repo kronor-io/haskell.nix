@@ -214,6 +214,7 @@ in
 
     passthru = (mkDrvArgs.passthru or {}) // {
       ghc = ghcEnv.drv;
+      hoogleIndex = hoogleIndex;
       configFiles = configFiles.drv;
     };
   } // lib.optionalAttrs exactDeps {
