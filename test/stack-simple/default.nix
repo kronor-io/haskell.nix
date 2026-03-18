@@ -13,7 +13,7 @@ let
 
   packages = pkgSet.config.hsPkgs;
 
-in pkgs.recurseIntoAttrs {
+in pkgs.lib.recurseIntoAttrs {
   meta.disabled = compiler-nix-name != "ghc865";
   stack-simple-exe = (haskellLib.check packages.stack-simple.components.exes.stack-simple-exe) // {
       # Attributes used for debugging with nix repl

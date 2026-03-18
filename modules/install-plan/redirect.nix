@@ -38,7 +38,7 @@ let
         // lib.optionalAttrs (componentsByName ? lib) {
           library = lookupComponent "" "" componentsByName.lib;
         };
-      checks = pkgs.recurseIntoAttrs (builtins.mapAttrs
+      checks = pkgs.lib.recurseIntoAttrs (builtins.mapAttrs
         (_: d: pkgs.haskell-nix.haskellLib.check d)
           (lib.filterAttrs (_: d: d.config.doCheck) components.tests));
       inherit (defaultTargetPackage) buildType setup;

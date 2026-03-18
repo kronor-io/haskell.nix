@@ -100,7 +100,7 @@ pkgs:
 #    "cgl" = [ "CoinMP" ];
 #    "clp" = [ "CoinMP" ];
 #    "coindatasample" = [ "CoinMP" ];
-    "coinmp" = [ "CoinMP" ];
+    "coinmp" = [ "coinmp" ];
 #    "coinutils" = [ "CoinMP" ];
 #    "osi-cbc" = [ "CoinMP" ];
 #    "osi-clp" = [ "CoinMP" ];
@@ -974,10 +974,6 @@ pkgs:
 #    "bash" = [ "bashInteractiveFHS" ];
 #    "libbcc" = [ "bcc" ]; # error: bcc-0.24.0 not supported for interpreter python3.10 on macOS
     "libbcg729" = [ "bcg729" ];
-    "bctoolbox" = [ "bctoolbox" ];
-    "bctoolbox-tester" = [ "bctoolbox" ];
-    "bcunit" = [ "bcunit" ];
-    "belle-sip" = [ "belle-sip" ];
     "bemenu" = [ "bemenu" ];
     "biblesync" = [ "biblesync" ];
     "bicon" = [ "bicon" ];
@@ -1023,8 +1019,6 @@ pkgs:
     "BoogieVCGeneration" = [ "boogie" ];
     "Provers.SMTLib" = [ "boogie" ];
     "boolstuff-0.1" = [ "boolstuff" ];
-    "botan-2" = [ "botan2" ];
-    "botan" = [ "botan2" ];
     "boxfort" = [ "boxfort" ];
     "libbrasero-burn3" = [ "brasero" ];
     "libbrasero-media3" = [ "brasero" ];
@@ -1205,7 +1199,6 @@ pkgs:
     "wxsmith-contrib" = [ "codeblocksFull" ];
     "codec2" = [ "codec2" ];
     "coeurl" = [ "coeurl" ];
-    "cogcore" = [ "cog" ];
     "cogl-1.0" = [ "cogl" ];
     "cogl-2.0-experimental" = [ "cogl" ];
     "cogl-gl-1.0" = [ "cogl" ];
@@ -1297,14 +1290,9 @@ pkgs:
 #    "davix" = [ "davix-copy" ];
     "dbus-1" = [ "dbus" ];
     "dbus-glib-1" = [ "dbus-glib" ];
-    "dbus-sharp-1.0" = [ "dbus-sharp-1_0" ];
-    "dbus-sharp-2.0" = [ "dbus-sharp-2_0" ];
-    "dbus-sharp-glib-1.0" = [ "dbus-sharp-glib-1_0" ];
-    "dbus-sharp-glib-2.0" = [ "dbus-sharp-glib-2_0" ];
     "dbus-c++-1" = [ "dbus_cplusplus" ];
     "dbus-c++-glib-1" = [ "dbus_cplusplus" ];
     "dcadec" = [ "dcadec" ];
-    "dclib" = [ "dclib" ];
     "dconf" = [ "dconf" ];
     "ddccontrol" = [ "ddccontrol" ];
     "ddcutil" = [ "ddcutil" ];
@@ -1324,9 +1312,9 @@ pkgs:
     "libmarkdown" = [ "discount" ];
     "disnix" = [ "disnix" ];
     "ddjvuapi" = [ "djvulibre" ];
-    "dleyna-core-1.0" = [ "dleyna-core" ];
-    "dleyna-renderer-service-1.0" = [ "dleyna-renderer" ];
-    "dleyna-server-service-1.0" = [ "dleyna-server" ];
+    "dleyna-core-1.0" = [ "dleyna" ];
+    "dleyna-renderer-service-1.0" = [ "dleyna" ];
+    "dleyna-server-service-1.0" = [ "dleyna" ];
     "dlib-1" = [ "dlib" ];
     "docopt" = [ "docopt_cpp" ];
 #    "libbitcoinconsensus" = [ "dogecoin" ];
@@ -1383,14 +1371,13 @@ pkgs:
     "dspam" = [ "dspam" ];
     "dssi" = [ "dssi" ];
     "duktape" = [ "duktape" ];
-    "dumb" = [ "dumb" ];
+    "dumb" = [ "libopenmpt" ];
     "libduo" = [ "duo-unix" ];
     "dydisnix" = [ "dydisnix" ];
     "com_err" = [ "e2fsprogs" ];
     "e2p" = [ "e2fsprogs" ];
     "ext2fs" = [ "e2fsprogs" ];
     "ss" = [ "e2fsprogs" ];
-    "easyloggingpp" = [ "easyloggingpp" ];
     "eccodes" = [ "eccodes" ];
     "eccodes_f90" = [ "eccodes" ];
     "ecdsautil" = [ "ecdsautils" ];
@@ -1696,7 +1683,6 @@ pkgs:
     "gf2x" = [ "gf2x" ];
     "gflags" = [ "gflags" ];
     "libgfshare" = [ "gfshare" ];
-    "ggobi" = [ "ggobi" ];
     "ggzcore" = [ "ggz_base_libs" ];
     "ggzmod" = [ "ggz_base_libs" ];
     "libggz" = [ "ggz_base_libs" ];
@@ -1712,8 +1698,8 @@ pkgs:
     "givaro" = [ "givaro" ];
     "gjs-1.0" = [ "gjs" ];
     "gkrellm" = [ "gkrellm" ];
-    "libglabels-3.0" = [ "glabels" ];
-    "libglbarcode-3.0" = [ "glabels" ];
+    "libglabels-3.0" = [ "glabels-qt" ];
+    "libglbarcode-3.0" = [ "glabels-qt" ];
     "gladeui-2.0" = [ "glade" ];
     "libglee" = [ "glee" ];
     "glew" = [ "glew" ];
@@ -2401,7 +2387,6 @@ pkgs:
     "hdf5_cpp-1.10.6" = [ "itk" ];
 #    "libopenjp2" = [ "itk" ];
 #    "libopenjp2" = [ "itk4" ];
-    "itpp" = [ "itpp" ];
 #    "jack" = [ "jack1" ];
 #    "jack" = [ "jack2" ];
     "jags" = [ "jags" ];
@@ -2444,7 +2429,7 @@ pkgs:
     "libdnssec" = [ "knot-dns" ];
     "libknot" = [ "knot-dns" ];
     "libzscanner" = [ "knot-dns" ];
-    "libkres" = [ "knot-resolver" ];
+    "libkres" = [ "knot-resolver_5" ];
 #    "gssrpc" = [ "krb5" ];
 #    "kadm-client" = [ "krb5" ];
 #    "kadm-server" = [ "krb5" ];
@@ -2562,8 +2547,8 @@ pkgs:
     "libbsd-ctor" = [ "libbsd" ];
     "libbsd" = [ "libbsd" ];
     "libbsd-overlay" = [ "libbsd" ];
-    "libbson-1.0" = [ "libbson" ];
-    "libbson-static-1.0" = [ "libbson" ];
+    "libbson-1.0" = [ "mongoc" ];
+    "libbson-static-1.0" = [ "mongoc" ];
     "libbtbb" = [ "libbtbb" ];
     "libburn-1" = [ "libburn" ];
     "libbutl" = [ "libbutl" ];
@@ -2647,13 +2632,7 @@ pkgs:
     "libde265" = [ "libde265" ];
     "libdecor-0" = [ "libdecor" ];
     "deltachat" = [ "libdeltachat" ];
-    "IL" = [ "libdevil" ];
-    "ILU" = [ "libdevil" ];
-    "ILUT" = [ "libdevil" ];
-#    "IL" = [ "libdevil-nox" ];
-#    "ILU" = [ "libdevil-nox" ];
-#    "ILUT" = [ "libdevil-nox" ];
-#    "libdigidoc" = [ "libdigidoc" ];
+    "libdigidoc" = [ "libdigidoc" ];
     "libdigidocpp" = [ "libdigidocpp" ];
     "libdiscid" = [ "libdiscid" ];
     "libdivecomputer" = [ "libdivecomputer" ];
@@ -2730,7 +2709,6 @@ pkgs:
     "libftdi1" = [ "libftdi1" ];
     "libftdipp1" = [ "libftdi1" ];
     "libfyaml" = [ "libfyaml" ];
-    "libgadu" = [ "libgadu" ];
     "gaminggear-0" = [ "libgaminggear" ];
     "libgbinder" = [ "libgbinder" ];
     "libgcrypt" = [ "libgcrypt" ];
@@ -2761,7 +2739,7 @@ pkgs:
 #    "glx" = [ "libglvnd" ];
 #    "libglvnd" = [ "libglvnd" ];
 #    "opengl" = [ "libglvnd" ];
-    "libgme" = [ "libgme" ];
+    "libgme" = [ "game-music-emu" ];
     "libgnome-games-support-1" = [ "libgnome-games-support" ];
     "libgnome-games-support-2" = [ "libgnome-games-support_2_0" ];
     "gnome-keyring-1" = [ "libgnome-keyring" ];
@@ -2794,15 +2772,15 @@ pkgs:
     "libhandy-0.0" = [ "libhandy_0" ];
     "libhangul" = [ "libhangul" ];
     "libheif" = [ "libheif" ];
-    "heimdal-gssapi" = [ "libheimdal" ];
-    "heimdal-kadm-client" = [ "libheimdal" ];
-    "heimdal-kadm-server" = [ "libheimdal" ];
-    "heimdal-krb5" = [ "libheimdal" ];
-#    "kadm-client" = [ "libheimdal" ];
-#    "kadm-server" = [ "libheimdal" ];
-    "kafs" = [ "libheimdal" ];
-#    "krb5-gssapi" = [ "libheimdal" ];
-#    "krb5" = [ "libheimdal" ];
+    "heimdal-gssapi" = [ "heimdal" ];
+    "heimdal-kadm-client" = [ "heimdal" ];
+    "heimdal-kadm-server" = [ "heimdal" ];
+    "heimdal-krb5" = [ "heimdal" ];
+#    "kadm-client" = [ "heimdal" ];
+#    "kadm-server" = [ "heimdal" ];
+    "kafs" = [ "heimdal" ];
+#    "krb5-gssapi" = [ "heimdal" ];
+#    "krb5" = [ "heimdal" ];
     "libhsts" = [ "libhsts" ];
     "libhwy-contrib" = [ "libhwy" ];
     "libhwy" = [ "libhwy" ];
@@ -2854,7 +2832,6 @@ pkgs:
     "libjxl_threads" = [ "libjxl" ];
     "kate" = [ "libkate" ];
     "libkeyfinder" = [ "libkeyfinder" ];
-    "kkc-1.0" = [ "libkkc" ];
     "libkqueue" = [ "libkqueue" ];
 #    "gssrpc" = [ "libkrb5" ];
     "kadm-client" = [ "libkrb5" ];
@@ -2913,7 +2890,6 @@ pkgs:
     "modulemd-2.0" = [ "libmodulemd" ];
 #    "libmongo-client" = [ "libmongo-client" ];
     "libmowgli-2" = [ "libmowgli" ];
-    "libmp3splt" = [ "libmp3splt" ];
     "mpack" = [ "libmpack" ];
     "libmpdclient" = [ "libmpdclient" ];
     "libmpeg2convert" = [ "libmpeg2" ];
@@ -2923,7 +2899,6 @@ pkgs:
     "mt32emu" = [ "libmt32emu" ];
     "libmtp" = [ "libmtp" ];
 #    "libmusicbrainz3" = [ "libmusicbrainz" ];
-    "libmusicbrainz3" = [ "libmusicbrainz3" ];
     "libmusicbrainz5" = [ "libmusicbrainz5" ];
     "libmwaw-0.3" = [ "libmwaw" ];
 
@@ -3041,7 +3016,6 @@ pkgs:
     "libqb" = [ "libqb" ];
     "qmi-glib" = [ "libqmi" ];
     "qrtr-glib" = [ "libqrtr-glib" ];
-    "Quotient" = [ "libquotient" ];
     "r3" = [ "libr3" ];
     "bcm_host" = [ "libraspberrypi" ];
     "brcmegl" = [ "libraspberrypi" ];
@@ -3093,7 +3067,7 @@ pkgs:
     "librsb" = [ "librsb" ];
     "librseq" = [ "librseq" ];
     "librsvg-2.0" = [ "librsvg" ];
-    "librtlsdr" = [ "librtlsdr" ];
+    "librtlsdr" = [ "rtl-sdr" ];
     "rtprocess" = [ "librtprocess" ];
     "rttopo" = [ "librttopo" ];
     "samplerate" = [ "libsamplerate" ];
@@ -3129,7 +3103,7 @@ pkgs:
     "libsixel" = [ "libsixel" ];
     "libskk" = [ "libskk" ];
     "slirp" = [ "libslirp" ];
-    "smartcols" = [ "libsmartcols" ];
+    "smartcols" = [ "util-linux" ];
     "libsmbios_c" = [ "libsmbios" ];
     "smf" = [ "libsmf" ];
     "libsmi" = [ "libsmi" ];
@@ -3157,7 +3131,6 @@ pkgs:
     "cnmatrix" = [ "libsurvive" ];
     "survive" = [ "libsurvive" ];
     "sysprof-capture-4" = [ "libsysprof-capture" ];
-    "libtap" = [ "libtap" ];
     "libtasn1" = [ "libtasn1" ];
     "libtelnet" = [ "libtelnet" ];
     "tensorflow" = pkgs.lib.optional (builtins.compareVersions pkgs.lib.version "21.11" >= 0) "libtensorflow";
@@ -3546,10 +3519,6 @@ pkgs:
     "system.web.mvc" = [ "mono" ];
     "wcf" = [ "mono" ];
     "xbuild12" = [ "mono" ];
-    "mono-addins-gui" = [ "mono-addins" ];
-    "mono-addins" = [ "mono-addins" ];
-    "mono-addins-msbuild" = [ "mono-addins" ];
-    "mono-addins-setup" = [ "mono-addins" ];
 #    "aspnetwebstack" = [ "mono4" ];
 #    "cecil" = [ "mono4" ];
 #    "dotnet35" = [ "mono4" ];
@@ -3636,7 +3605,7 @@ pkgs:
     "mpv" = [ "mpv" ];
 #    "mpv" = [ "mpv-unwrapped" ];
     "mrsh" = [ "mrsh" ];
-    "msgpack" = [ "msgpack" ];
+    "msgpack" = [ "msgpack-c" ];
     "libmsi-1.0" = [ "msitools" ];
     "mtdev" = [ "mtdev" ];
     "mujs" = [ "mujs" ];
@@ -3742,7 +3711,6 @@ pkgs:
     "notcurses-ffi" = [ "notcurses" ];
     "notcurses" = [ "notcurses" ];
     "notcurses++" = [ "notcurses" ];
-    "notify-sharp-3.0" = [ "notify-sharp" ];
     "npapi-sdk" = [ "npapi_sdk" ];
     "libns3.35-antenna-debug" = [ "ns-3" ];
     "libns3.35-applications-debug" = [ "ns-3" ];
@@ -3868,7 +3836,7 @@ pkgs:
     "openal" = [ "openal" ];
 #    "openal" = [ "openalSoft" ];
     "openbabel-3" = [ "openbabel" ];
-    "openbabel-2.0" = [ "openbabel2" ];
+    "openbabel-2.0" = [ "openbabel" ];
 #    "openbabel-3" = [ "openbabel3" ];
 #    "blas" = [ "openblas" ];
 #    "cblas" = [ "openblas" ];
@@ -3904,7 +3872,7 @@ pkgs:
 #    "OpenEXR" = [ "openexr_3" ];
     "openh264" = [ "openh264" ];
     "openhmd" = [ "openhmd" ];
-    "OpenImageIO" = [ "openimageio2" ];
+    "OpenImageIO" = [ "openimageio" ];
     "OpenIPMIcmdlang" = [ "openipmi" ];
     "OpenIPMI" = [ "openipmi" ];
     "OpenIPMIposix" = [ "openipmi" ];
@@ -3983,7 +3951,6 @@ pkgs:
 #    "gtest" = [ "organicmaps" ];
     "orocos-kdl" = [ "orocos-kdl" ];
     "orocos_kdl" = [ "orocos-kdl" ];
-    "ortp" = [ "ortp" ];
     "coindatanetlib" = [ "osi" ];
     "coindatasample" = [ "osi" ];
     "coinutils" = [ "osi" ];
@@ -4061,7 +4028,7 @@ pkgs:
     "libpcrecpp" = [ "pcre-cpp" ];
 #    "libpcre" = [ "pcre-cpp" ];
 #    "libpcreposix" = [ "pcre-cpp" ];
-    "libpcre16" = [ "pcre16" ];
+    "libpcre16" = [ "pcre2" ];
 #    "libpcre" = [ "pcre16" ];
 #    "libpcreposix" = [ "pcre16" ];
     "libpcre2-16" = [ "pcre2" ];
@@ -4074,7 +4041,6 @@ pkgs:
     "petsc" = [ "petsc" ];
     "PETSc" = [ "petsc" ];
     "pfs" = [ "pfstools" ];
-    "pgf" = [ "pgf_graphics" ];
     "pHash" = [ "phash" ];
     "libphodav-2.0" = [ "phodav" ];
     "physfs" = [ "physfs" ];
@@ -4332,70 +4298,70 @@ pkgs:
 #    "QtUiTools" = [ "qt48Full" ];
 #    "QtXmlPatterns" = [ "qt48Full" ];
 #    "QtXml" = [ "qt48Full" ];
-    "Qt53DAnimation" = [ "qt5Full" ];
-    "Qt53DCore" = [ "qt5Full" ];
-    "Qt53DExtras" = [ "qt5Full" ];
-    "Qt53DInput" = [ "qt5Full" ];
-    "Qt53DLogic" = [ "qt5Full" ];
-    "Qt53DQuickAnimation" = [ "qt5Full" ];
-    "Qt53DQuickExtras" = [ "qt5Full" ];
-    "Qt53DQuickInput" = [ "qt5Full" ];
-    "Qt53DQuick" = [ "qt5Full" ];
-    "Qt53DQuickRender" = [ "qt5Full" ];
-    "Qt53DQuickScene2D" = [ "qt5Full" ];
-    "Qt53DRender" = [ "qt5Full" ];
-    "Qt5Bluetooth" = [ "qt5Full" ];
-    "Qt5Charts" = [ "qt5Full" ];
-    "Qt5Concurrent" = [ "qt5Full" ];
-    "Qt5Core" = [ "qt5Full" ];
-    "Qt5DBus" = [ "qt5Full" ];
-    "Qt5Designer" = [ "qt5Full" ];
-    "Qt5Gui" = [ "qt5Full" ];
-    "Qt5Help" = [ "qt5Full" ];
-    "Qt5Location" = [ "qt5Full" ];
-    "Qt5Multimedia" = [ "qt5Full" ];
-    "Qt5MultimediaWidgets" = [ "qt5Full" ];
-    "Qt5Network" = [ "qt5Full" ];
-    "Qt5Nfc" = [ "qt5Full" ];
-    "Qt5OpenGLExtensions" = [ "qt5Full" ];
-    "Qt5OpenGL" = [ "qt5Full" ];
-    "Qt5Pdf" = [ "qt5Full" ];
-    "Qt5PdfWidgets" = [ "qt5Full" ];
-    "Qt5Positioning" = [ "qt5Full" ];
-    "Qt5PositioningQuick" = [ "qt5Full" ];
-    "Qt5PrintSupport" = [ "qt5Full" ];
-    "Qt5QmlModels" = [ "qt5Full" ];
-    "Qt5Qml" = [ "qt5Full" ];
-    "Qt5QmlWorkerScript" = [ "qt5Full" ];
-    "Qt5QuickControls2" = [ "qt5Full" ];
-    "Qt5Quick" = [ "qt5Full" ];
-    "Qt5QuickTemplates2" = [ "qt5Full" ];
-    "Qt5QuickTest" = [ "qt5Full" ];
-    "Qt5QuickWidgets" = [ "qt5Full" ];
-    "Qt5Script" = [ "qt5Full" ];
-    "Qt5ScriptTools" = [ "qt5Full" ];
-    "Qt5Sensors" = [ "qt5Full" ];
-    "Qt5SerialPort" = [ "qt5Full" ];
-    "Qt5Sql" = [ "qt5Full" ];
-    "Qt5Svg" = [ "qt5Full" ];
-    "Qt5Test" = [ "qt5Full" ];
-    "Qt5UiPlugin" = [ "qt5Full" ];
-    "Qt5UiTools" = [ "qt5Full" ];
-    "Qt5VirtualKeyboard" = [ "qt5Full" ];
-    "Qt5WaylandClient" = [ "qt5Full" ];
-    "Qt5WaylandCompositor" = [ "qt5Full" ];
-    "Qt5WebChannel" = [ "qt5Full" ];
-    "Qt5WebEngineCore" = [ "qt5Full" ];
-    "Qt5WebEngine" = [ "qt5Full" ];
-    "Qt5WebEngineWidgets" = [ "qt5Full" ];
-    "Qt5WebKit" = [ "qt5Full" ];
-    "Qt5WebKitWidgets" = [ "qt5Full" ];
-    "Qt5WebSockets" = [ "qt5Full" ];
-    "Qt5WebView" = [ "qt5Full" ];
-    "Qt5Widgets" = [ "qt5Full" ];
-    "Qt5X11Extras" = [ "qt5Full" ];
-    "Qt5XmlPatterns" = [ "qt5Full" ];
-    "Qt5Xml" = [ "qt5Full" ];
+    "Qt53DAnimation" = [ "qt5" ];
+    "Qt53DCore" = [ "qt5" ];
+    "Qt53DExtras" = [ "qt5" ];
+    "Qt53DInput" = [ "qt5" ];
+    "Qt53DLogic" = [ "qt5" ];
+    "Qt53DQuickAnimation" = [ "qt5" ];
+    "Qt53DQuickExtras" = [ "qt5" ];
+    "Qt53DQuickInput" = [ "qt5" ];
+    "Qt53DQuick" = [ "qt5" ];
+    "Qt53DQuickRender" = [ "qt5" ];
+    "Qt53DQuickScene2D" = [ "qt5" ];
+    "Qt53DRender" = [ "qt5" ];
+    "Qt5Bluetooth" = [ "qt5" ];
+    "Qt5Charts" = [ "qt5" ];
+    "Qt5Concurrent" = [ "qt5" ];
+    "Qt5Core" = [ "qt5" ];
+    "Qt5DBus" = [ "qt5" ];
+    "Qt5Designer" = [ "qt5" ];
+    "Qt5Gui" = [ "qt5" ];
+    "Qt5Help" = [ "qt5" ];
+    "Qt5Location" = [ "qt5" ];
+    "Qt5Multimedia" = [ "qt5" ];
+    "Qt5MultimediaWidgets" = [ "qt5" ];
+    "Qt5Network" = [ "qt5" ];
+    "Qt5Nfc" = [ "qt5" ];
+    "Qt5OpenGLExtensions" = [ "qt5" ];
+    "Qt5OpenGL" = [ "qt5" ];
+    "Qt5Pdf" = [ "qt5" ];
+    "Qt5PdfWidgets" = [ "qt5" ];
+    "Qt5Positioning" = [ "qt5" ];
+    "Qt5PositioningQuick" = [ "qt5" ];
+    "Qt5PrintSupport" = [ "qt5" ];
+    "Qt5QmlModels" = [ "qt5" ];
+    "Qt5Qml" = [ "qt5" ];
+    "Qt5QmlWorkerScript" = [ "qt5" ];
+    "Qt5QuickControls2" = [ "qt5" ];
+    "Qt5Quick" = [ "qt5" ];
+    "Qt5QuickTemplates2" = [ "qt5" ];
+    "Qt5QuickTest" = [ "qt5" ];
+    "Qt5QuickWidgets" = [ "qt5" ];
+    "Qt5Script" = [ "qt5" ];
+    "Qt5ScriptTools" = [ "qt5" ];
+    "Qt5Sensors" = [ "qt5" ];
+    "Qt5SerialPort" = [ "qt5" ];
+    "Qt5Sql" = [ "qt5" ];
+    "Qt5Svg" = [ "qt5" ];
+    "Qt5Test" = [ "qt5" ];
+    "Qt5UiPlugin" = [ "qt5" ];
+    "Qt5UiTools" = [ "qt5" ];
+    "Qt5VirtualKeyboard" = [ "qt5" ];
+    "Qt5WaylandClient" = [ "qt5" ];
+    "Qt5WaylandCompositor" = [ "qt5" ];
+    "Qt5WebChannel" = [ "qt5" ];
+    "Qt5WebEngineCore" = [ "qt5" ];
+    "Qt5WebEngine" = [ "qt5" ];
+    "Qt5WebEngineWidgets" = [ "qt5" ];
+    "Qt5WebKit" = [ "qt5" ];
+    "Qt5WebKitWidgets" = [ "qt5" ];
+    "Qt5WebSockets" = [ "qt5" ];
+    "Qt5WebView" = [ "qt5" ];
+    "Qt5Widgets" = [ "qt5" ];
+    "Qt5X11Extras" = [ "qt5" ];
+    "Qt5XmlPatterns" = [ "qt5" ];
+    "Qt5Xml" = [ "qt5" ];
     "dbus-python" = [ "qtile" ];
     "py3cairo" = [ "qtile" ];
     "pygobject-3.0" = [ "qtile" ];
@@ -4743,7 +4709,7 @@ pkgs:
     "rhythmbox" = [ "rhythmbox" ];
     "riemann-client" = [ "riemann_c_client" ];
     "librinutils" = [ "rinutils" ];
-    "river-protocols" = [ "river" ];
+    "river-protocols" = [ "river-classic" ];
     "rivet" = [ "rivet" ];
     "librz" = [ "rizin" ];
     "rz_analysis" = [ "rizin" ];
@@ -4918,7 +4884,6 @@ pkgs:
     "shadowsocks-libev" = [ "shadowsocks-libev" ];
     "shapelib" = [ "shapelib" ];
     "shared-mime-info" = [ "shared-mime-info" ];
-    "shared-desktop-ontologies" = [ "shared_desktop_ontologies" ];
     "shibsp-lite" = [ "shibboleth-sp" ];
     "shibsp" = [ "shibboleth-sp" ];
     "shine" = [ "shine" ];
@@ -5052,7 +5017,6 @@ pkgs:
     "spice-client-glib-2.0" = [ "spice-gtk" ];
     "spice-client-gtk-3.0" = [ "spice-gtk" ];
     "spice-protocol" = [ "spice-protocol" ];
-    "mozjs-91" = [ "spidermonkey_91" ];
     "riscv-disasm" = [ "spike" ];
     "riscv-fesvr" = [ "spike" ];
     "SPIRV-Headers" = [ "spirv-headers" ];
@@ -5180,7 +5144,7 @@ pkgs:
     "telepathy-glib" = [ "telepathy-glib" ];
     "mission-control-plugins" = [ "telepathy-mission-control" ];
     "template-glib-1.0" = [ "template-glib" ];
-    "tepl-6" = [ "tepl" ];
+    "tepl-6" = [ "libgedit-tepl" ];
     "tesseract" = [ "tesseract" ];
 #    "tesseract" = [ "tesseract3" ];
 #    "tesseract" = [ "tesseract4" ];
@@ -5306,8 +5270,6 @@ pkgs:
     "valgrind" = [ "valgrind" ];
 #    "valgrind" = [ "valgrind-light" ];
     "libvalhalla" = [ "valhalla" ];
-    "valum-0.3" = [ "valum" ];
-    "vsgi-0.3" = [ "valum" ];
     "vamp-hostsdk" = [ "vamp-plugin-sdk" ];
     "vamp-sdk" = [ "vamp-plugin-sdk" ];
     "vamp" = [ "vamp-plugin-sdk" ];
@@ -5461,7 +5423,6 @@ pkgs:
     "xmltooling-lite" = [ "xml-tooling-c" ];
     "xmltooling" = [ "xml-tooling-c" ];
     "xmlbird" = [ "xmlbird" ];
-    "libfo-0.6" = [ "xmlroff" ];
     "xmlrpc_abyss" = [ "xmlrpc_c" ];
     "xmlrpc_abyss++" = [ "xmlrpc_c" ];
     "xmlrpc_client" = [ "xmlrpc_c" ];
@@ -5687,7 +5648,21 @@ pkgs:
     "xorg-server" = [ "xorgserver" ];
     "xorg-sgml-doctools" = [ "xorgsgmldoctools" ];
     "xtrans" = [ "xtrans" ];
-} // {
+  } // lookupAttrsIn pkgs.linphonePackages {
+    "bctoolbox" = [ "bctoolbox" ];
+    "bctoolbox-tester" = [ "bctoolbox" ];
+    "bcunit" = [ "bcunit" ];
+    "belle-sip" = [ "belle-sip" ];
+    "ortp" = [ "ortp" ];
+  } // lookupAttrsIn pkgs.kdePackages {
+    "Quotient" = [ "libquotient" ];
+  } // {
+    "botan" =
+      if pkgs ? botan3
+        then [ pkgs.botan3 ]
+      else if pkgs ? botan
+        then [ pkgs.botan ]
+      else [];
     "gtkglext-1.0"                       =
       if pkgs ? gnome2 && pkgs.gnome2 ? gtkglext && pkgs ? gtk2
         then [ pkgs.gnome2.gtkglext pkgs.gtk2 ]
