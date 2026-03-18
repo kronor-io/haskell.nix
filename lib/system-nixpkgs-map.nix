@@ -12,24 +12,16 @@ let
     # Find the versions of mcfgthreads used by stdenv.cc
     (pkgs.threadsCrossFor or (_x: { package = pkgs.windows.mcfgthreads; }) pkgs.stdenv.cc.version).package
     # If we just use `pkgs.buildPackages.gcc.cc` here it breaks the `th-dlls` test. TODO figure out why exactly.
-    (pkgs.buildPackages.runCommand "gcc-only" { nativeBuildInputs = [ (pkgs.buildPackages.lndir or pkgs.buildPackages.xorg.lndir) ]; } ''
+    (pkgs.buildPackages.runCommand "gcc-only" { nativeBuildInputs = [ pkgs.buildPackages.xorg.lndir ]; } ''
       mkdir $out
       lndir ${pkgs.buildPackages.gcc.cc} $out
     '')
   ] else [];
-  # In newer versions of nixpkgs `pg_config` has been moved to its own derivation.
-  # Haskell libs that depend on the `pq` library (like `postgresql-libpq`)
-  # are likely to require `pg_config` to be in the `PATH` as well.
-  postgresqlLibs = [ postgresql ] ++ lib.optional (postgresql ? pg_config) postgresql.pg_config;
 in
 # -- linux
 { crypto = [ openssl ];
   "c++" = [ libcxx ];
-  # at some point this happened:
-  #
-  #    error: 'libcxxabi' was merged into 'libcxx'
-  #
-  "c++abi" = if (__tryEval libcxxabi).success then [ libcxxabi ] else [ libcxx ];
+  "c++abi" = [ libcxxabi ];
   system-cxx-std-lib = [];
   "stdc++" = gcclibs;
   "stdc++-6" = gcclibs;
@@ -45,15 +37,15 @@ in
   GLEW = [ glew ];
   GLU = [ libGLU ];
   alut = [ freealut ];
-  X11 = [ (pkgs.libx11 or xorg.libX11) ];
-  Xrandr = [ (pkgs.libxrandr or xorg.libXrandr) ];
-  Xrender = [ (pkgs.libxrender or xorg.libXrender) ];
-  Xss = [ (pkgs.libxscrnsaver or xorg.libXScrnSaver) ];
-  Xext = [ (pkgs.libxext or xorg.libXext) ];
-  Xi = [ (pkgs.libxi or xorg.libXi) ];
-  Xxf86vm = [ (pkgs.libxxf86vm or xorg.libXxf86vm) ];
-  Xcursor = [ (pkgs.libxcursor or xorg.libXcursor) ];
-  Xinerama = [ (pkgs.libxinerama or xorg.libXinerama) ];
+  X11 = with xorg; [ libX11 ];
+  Xrandr = [ xorg.libXrandr ];
+  Xrender = [ xorg.libXrender ];
+  Xss = [ xorg.libXScrnSaver ];
+  Xext = [ xorg.libXext ];
+  Xi = [ xorg.libXi ];
+  Xxf86vm = [ xorg.libXxf86vm ];
+  Xcursor = [ xorg.libXcursor ];
+  Xinerama = [ xorg.libXinerama ];
   mysqlclient = [ mysql ];
   Imlib2 = [ imlib2 ];
   asound = [ alsa-lib ];
@@ -61,10 +53,10 @@ in
   bz2 = [ bzip2 ];
   util = [ utillinux ];
   magic = [ file ];
-  pgcommon = postgresqlLibs;
-  pgport = postgresqlLibs;
-  pq = postgresqlLibs;
-  libpq = postgresqlLibs;
+  pgcommon = [ postgresql ];
+  pgport = [ postgresql] ;
+  pq = [ postgresql ];
+  libpq = [ postgresql ];
   iconv = [ libiconv ];
   lapack = [ liblapack ];
   boost_atomic = [ boost ];
@@ -106,7 +98,7 @@ in
   tensorflow = [ libtensorflow ];
   # odbc package requires unixODBC packages to be installed in order to successfully
   # compile C sources (https://github.com/fpco/odbc/blob/master/cbits/odbc.c)
-  odbc = [ (pkgs.unixodbc or unixODBC) ];
+  odbc = [ unixODBC ];
   opencv = [ opencv3 ];
   phonenumber = [ libphonenumber ];
   icuuc = [ icu ];
@@ -128,7 +120,6 @@ in
   GeoIP = [ geoip ];
   pulse-simple = [ libpulseaudio ];
   oath = [ liboauth ];
-  sqlite3 = [ sqlite ];
 }
 # -- windows
 // { advapi32 = null; gdi32 = null; imm32 = null; msimg32 = null;
@@ -152,9 +143,7 @@ in
 // { mingwex = null;
 }
 # -- os x
-# TODO remove once planner code is updated not to output frameworks
-# (we can only do that once we no longer support old nixpkgs where
-# framework derivations are needed)
+# NB: these map almost 1:1 to the framework names
 //
 (
 let

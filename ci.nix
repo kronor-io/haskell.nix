@@ -1,9 +1,9 @@
 # 'supportedSystems' restricts the set of systems that we will evaluate for. Useful when you're evaluating
 # on a machine with e.g. no way to build the Darwin IFDs you need!
-{ ifdLevel # This is passed in from flake.nix
+{ ifdLevel ? 3
 , checkMaterialization ? false
 , system ? builtins.currentSystem
-, evalSystem ? builtins.currentSystem or "aarch64-darwin"
+, evalSystem ? builtins.currentSystem or "x86_64-linux"
   # NOTE: we apply checkMaterialization when defining nixpkgsArgs
 , haskellNix ? import ./default.nix { inherit system ; }
 }:
@@ -18,7 +18,10 @@
 
   # short names for nixpkgs versions
   nixpkgsVersions = {
-    "R2511" = inputs.nixpkgs-2511;
+    "R2205" = inputs.nixpkgs-2205;
+    "R2211" = inputs.nixpkgs-2211;
+    "R2305" = inputs.nixpkgs-2305;
+    "R2311" = inputs.nixpkgs-2311;
     "unstable" = inputs.nixpkgs-unstable;
   };
 
@@ -26,12 +29,11 @@
     # set checkMaterialization as per top-level argument
     overlays = [
       haskellNix.overlay
-      (final: prev: {
+      (_final: prev: {
         haskell-nix = prev.haskell-nix // {
           inherit checkMaterialization;
         };
       })
-      (import ./test/overlay.nix)
     ];
     # Needed for dwarf tests
     config = haskellNix.config // {
@@ -39,16 +41,6 @@
         "libdwarf-20210528"
         "libdwarf-20181024"
         "dwarfdump-20181024"
-      ];
-      allowUnfreePredicate = pkg: builtins.elem (lib.getName pkg) [
-        "platform-tools"
-        "ndk"
-        "android-sdk-ndk"
-        "android-sdk-platform-tools"
-        "aarch64-unknown-linux-android-ndk-toolchain-wrapper"
-        "aarch64-unknown-linux-android-ndk-toolchain"
-        "armv7a-unknown-linux-androideabi-ndk-toolchain-wrapper"
-        "armv7a-unknown-linux-androideabi-ndk-toolchain"
       ];
     };
   };
@@ -64,71 +56,63 @@
       # cabal-install and nix-tools plans.  When removing a ghc version
       # from here (so that is no longer cached) also remove ./materialized/ghcXXX.
       # Update supported-ghc-versions.md to reflect any changes made here.
-      nixpkgs.lib.optionalAttrs (builtins.elem nixpkgsName ["R2411" "R2505" "R2511"]) {
+      nixpkgs.lib.optionalAttrs (nixpkgsName == "R2305") {
+        ghc810 = false;
+        ghc90 = false;
+        ghc92 = false;
+      } // nixpkgs.lib.optionalAttrs (nixpkgsName == "R2311") {
+        ghc94 = false;
         ghc96 = false;
         ghc98 = false;
-        ghc910 = false;
-        ghc912 = false;
-        ghc914 = false;
       } // nixpkgs.lib.optionalAttrs (nixpkgsName == "unstable") {
+        ghc810 = true;
+        ghc90 = false;
+        ghc92 = true;
+        ghc94 = true;
         ghc96 = true;
+        ghc96llvm = true;
         ghc98 = true;
-        ghc910 = true;
-        ghc912 = true;
-        ghc914 = true;
-        ghc914llvm = true;
-        # ghc915 = true;
+        ghc98llvm = true;
+        ghc910X = true;
+        ghc911 = true;
       })));
   crossSystems = nixpkgsName: nixpkgs: compiler-nix-name:
     # We need to use the actual nixpkgs version we're working with here, since the values
     # of 'lib.systems.examples' are not understood between all versions
     let lib = nixpkgs.lib;
     in lib.optionalAttrs (nixpkgsName == "unstable"
-      && __match ".*llvm" compiler-nix-name == null
-      && builtins.elem system ["aarch64-linux" "x86_64-linux"]) {
-        static = p: p.pkgsStatic;
-      } // lib.optionalAttrs (nixpkgsName == "unstable"
-          && (__match ".*llvm" compiler-nix-name == null)
-          && !builtins.elem compiler-nix-name ["ghc9102" "ghc9103"]) {
-        inherit (lib.systems.examples) ghcjs;
-      } // lib.optionalAttrs (nixpkgsName == "unstable"
-          && (__match ".*llvm" compiler-nix-name == null)
-          && !builtins.elem compiler-nix-name ["ghc967" "ghc984" "ghc9103"]
-          && system != "x86_64-darwin") {
-        inherit (lib.systems.examples) wasi32;
-      } // lib.optionalAttrs (nixpkgsName == "unstable"
-          && (__match ".*llvm" compiler-nix-name == null)
-          && ((system == "x86_64-linux"  && !builtins.elem compiler-nix-name ["ghc902" "ghc928"])
-           || (system == "x86_64-darwin" && builtins.elem compiler-nix-name []))) { # TODO add ghc versions when we have more darwin build capacity
-        inherit (lib.systems.examples) mingwW64;
-      } // lib.optionalAttrs (nixpkgsName == "unstable"
-          && (__match ".*llvm" compiler-nix-name == null)
-          && ((system == "x86_64-linux"  && !builtins.elem compiler-nix-name ["ghc8107" "ghc902" "ghc928" "ghc948"])
-           || (system == "x86_64-darwin" && builtins.elem compiler-nix-name []))) { # TODO add ghc versions when we have more darwin build capacity
-        inherit (lib.systems.examples) ucrt64;
-      } // lib.optionalAttrs (system == "x86_64-linux" && nixpkgsName == "unstable" && !builtins.elem compiler-nix-name ["ghc902" "ghc928" "ghc948"]) {
-        # Musl cross only works on linux
-        # aarch64 cross only works on linux
-        inherit (lib.systems.examples) musl64 aarch64-multiplatform;
-      } // lib.optionalAttrs (__match ".*llvm" compiler-nix-name == null && system == "x86_64-linux" && nixpkgsName == "unstable" && !builtins.elem compiler-nix-name ["ghc902" "ghc928" "ghc948"]) {
-        # Out llvm versions of GHC seem to break for musl32
-        inherit (lib.systems.examples) musl32;
-      } // lib.optionalAttrs (system == "x86_64-linux"
-          && nixpkgsName == "unstable"
-          && !builtins.elem compiler-nix-name ["ghc967" "ghc984" "ghc9103"]) {
-        inherit (lib.systems.examples) aarch64-android-prebuilt;
-        inherit (lib.systems.examples) armv7a-android-prebuilt;
-      } // lib.optionalAttrs (system == "x86_64-linux" && nixpkgsName == "unstable" && !builtins.elem compiler-nix-name ["ghc8107" "ghc902"]) {
-        # TODO fix this for the compilers we build with hadrian (ghc >=9.4)
-        inherit (lib.systems.examples) aarch64-multiplatform-musl;
-      } // lib.optionalAttrs (system == "aarch64-linux" && nixpkgsName == "unstable" && !builtins.elem compiler-nix-name ["ghc8107" "ghc902"]) {
-        inherit (lib.systems.examples) aarch64-multiplatform-musl;
-      };
+      && (__match ".*llvm" compiler-nix-name == null)
+      && ((system == "x86_64-linux"  && !builtins.elem compiler-nix-name ["ghc884" "ghc902" "ghc928" "ghc948"])
+       || (system == "aarch64-linux" && !builtins.elem compiler-nix-name ["ghc884" "ghc902" "ghc928" "ghc948"])
+       || (system == "x86_64-darwin" && !builtins.elem compiler-nix-name ["ghc884" "ghc902" "ghc928" "ghc948"])
+       || (system == "aarch64-darwin" && !builtins.elem compiler-nix-name ["ghc884" "ghc902" "ghc928" "ghc948"])
+       )) {
+    inherit (lib.systems.examples) ghcjs;
+  } // lib.optionalAttrs (nixpkgsName != "unstable"
+      && (__match ".*llvm" compiler-nix-name == null)
+      && ((system == "x86_64-linux"  && !builtins.elem compiler-nix-name ["ghc884"])
+       || (system == "x86_64-darwin" && builtins.elem compiler-nix-name []))) { # TODO add ghc versions when we have more darwin build capacity
+    inherit (lib.systems.examples) mingwW64;
+  } // lib.optionalAttrs (nixpkgsName == "unstable"
+      && (__match ".*llvm" compiler-nix-name == null)
+      && ((system == "x86_64-linux"  && !builtins.elem compiler-nix-name ["ghc884" "ghc8107" "ghc902" "ghc928"])
+       || (system == "x86_64-darwin" && builtins.elem compiler-nix-name []))) { # TODO add ghc versions when we have more darwin build capacity
+    inherit (lib.systems.examples) ucrt64;
+  } // lib.optionalAttrs (system == "x86_64-linux" && nixpkgsName == "unstable" && !builtins.elem compiler-nix-name ["ghc884"]) {
+    # Musl cross only works on linux
+    # aarch64 cross only works on linux
+    inherit (lib.systems.examples) musl64 aarch64-multiplatform;
+  } // lib.optionalAttrs (system == "x86_64-linux" && nixpkgsName == "unstable" && builtins.elem compiler-nix-name ["ghc927" "ghc928"]) {
+    # TODO fix this for the compilers we build with hadrian (ghc >=9.4)
+    inherit (lib.systems.examples) aarch64-multiplatform-musl;
+  } // lib.optionalAttrs (system == "aarch64-linux" && nixpkgsName == "unstable" && !builtins.elem compiler-nix-name ["ghc884" "ghc8107" "ghc902"]) {
+    inherit (lib.systems.examples) aarch64-multiplatform-musl;
+  };
   isDisabled = d: d.meta.disabled or false;
 in
 dimension "Nixpkgs version" nixpkgsVersions (nixpkgsName: pinnedNixpkgsSrc:
   let evalPackages = import pinnedNixpkgsSrc (nixpkgsArgs // { system = evalSystem; });
-  in (dimension "GHC version" (compilerNixNames nixpkgsName evalPackages) (compiler-nix-name: {runTests}:
+  in dimension "GHC version" (compilerNixNames nixpkgsName evalPackages) (compiler-nix-name: {runTests}:
       let pkgs = import pinnedNixpkgsSrc (nixpkgsArgs // { inherit system; });
           build = import ./build.nix { inherit pkgs evalPackages ifdLevel compiler-nix-name haskellNix; };
           platformFilter = platformFilterGeneric pkgs system;
@@ -136,49 +120,24 @@ dimension "Nixpkgs version" nixpkgsVersions (nixpkgsName: pinnedNixpkgsSrc:
         # Native builds
         # TODO: can we merge this into the general case by picking an appropriate "cross system" to mean native?
         native = pkgs.lib.recurseIntoAttrs ({
-          roots = pkgs.haskell-nix.roots' { inherit compiler-nix-name evalPackages; } ifdLevel;
+          roots = pkgs.haskell-nix.roots' compiler-nix-name ifdLevel;
+          ghc = pkgs.buildPackages.haskell-nix.compiler.${compiler-nix-name};
         } // pkgs.lib.optionalAttrs runTests {
           inherit (build) tests tools maintainer-scripts maintainer-script-cache;
-        } // pkgs.lib.optionalAttrs (ifdLevel >= 3) rec {
-          hello = (pkgs.haskell-nix.hackage-package ({ name = "hello"; version = "1.0.0.2"; inherit evalPackages compiler-nix-name; }
-            // lib.optionalAttrs (builtins.compareVersions pkgs.buildPackages.haskell-nix.compiler.${compiler-nix-name}.version "9.13" >= 0) {
-              shell.tools.hoogle.cabalProjectLocal = ''
-                -- The following `allow-newer` are needed for
-                -- constraints: hoogle >=5.0.18.4, tls ==2.0.6, warp-tls <3.4.10, aeson >=2.2.3.0
-                allow-newer:
-                  aeson:template-haskell,
-                  aeson:containers,
-                  aeson:time,
-                  base64:base,
-                  cborg:base,
-                  cborg:containers,
-                  indexed-traversable:base,
-                  indexed-traversable:containers,
-                  indexed-traversable-instances:base,
-                  semialign:base,
-                  semialign:containers,
-                  serialise:base,
-                  serialise:containers,
-                  these:base,
-                  time-compat:base,
-                  uuid-types:template-haskell
-              '';
-          })).getComponent "exe:hello";
-          # Make sure the default shell tools (hoogle) are built
-          simple-shell = (hello.project.flake {}).devShells.default;
+        } // pkgs.lib.optionalAttrs (ifdLevel >= 2) {
+          inherit (pkgs.haskell-nix.iserv-proxy-exes.${compiler-nix-name}) iserv-proxy;
+        } // pkgs.lib.optionalAttrs (ifdLevel >= 3) {
+          hello = (pkgs.haskell-nix.hackage-package { name = "hello"; version = "1.0.0.2"; inherit evalPackages compiler-nix-name; }).getComponent "exe:hello";
         });
       }
       //
       dimension "Cross system" (crossSystems nixpkgsName evalPackages compiler-nix-name) (crossSystemName: crossSystem:
-        let pkgs =
-              if builtins.isAttrs crossSystem
-                then import pinnedNixpkgsSrc (nixpkgsArgs // { inherit system crossSystem; })
-                else crossSystem (import pinnedNixpkgsSrc (nixpkgsArgs // { inherit system; }));
+        # Cross builds
+        let pkgs = import pinnedNixpkgsSrc (nixpkgsArgs // { inherit system crossSystem; });
             build = import ./build.nix { inherit pkgs evalPackages ifdLevel compiler-nix-name haskellNix; };
         in pkgs.lib.recurseIntoAttrs (pkgs.lib.optionalAttrs (ifdLevel >= 1) ({
-            roots = pkgs.haskell-nix.roots' { inherit compiler-nix-name evalPackages; } ifdLevel // {
-              ghc = pkgs.buildPackages.haskell-nix.compiler.${compiler-nix-name}.override { ghcEvalPackages = evalPackages; };
-            };
+            roots = pkgs.haskell-nix.roots' compiler-nix-name ifdLevel;
+            ghc = pkgs.buildPackages.haskell-nix.compiler.${compiler-nix-name};
             # TODO: look into cross compiling ghc itself
             # ghc = pkgs.haskell-nix.compiler.${compiler-nix-name};
             # TODO: look into making tools work when cross compiling
@@ -187,18 +146,11 @@ dimension "Nixpkgs version" nixpkgsVersions (nixpkgsName: pinnedNixpkgsSrc:
             inherit (build) tests;
         })
         # GHCJS builds its own template haskell runner.
-        // pkgs.lib.optionalAttrs (ifdLevel >= 2 && !builtins.elem crossSystemName ["ghcjs" "wasi32"])
+        // pkgs.lib.optionalAttrs (ifdLevel >= 2 && crossSystemName != "ghcjs")
             pkgs.haskell-nix.iserv-proxy-exes.${compiler-nix-name}
         // pkgs.lib.optionalAttrs (ifdLevel >= 3) {
-          hello = (pkgs.haskell-nix.hackage-package { name = "hello"; version = "1.0.0.2"; inherit evalPackages compiler-nix-name; }).getComponent "exe:hello";
+          hello = (pkgs.haskell-nix.hackage-package { name = "hello"; version = "1.0.0.2"; inherit compiler-nix-name; }).getComponent "exe:hello";
         })
       ))
-    ))
-    # Run once (unstable, x86_64-linux): make sure the getting-started flake
-    # template stays in sync with `hix init` — see issue #2518.
-    // lib.optionalAttrs (nixpkgsName == "unstable" && system == "x86_64-linux") {
-      template-matches-hix-init = import ./test/template-matches-hix-init.nix {
-        pkgs = import pinnedNixpkgsSrc (nixpkgsArgs // { inherit system; });
-      };
-    }
+    )
   )
