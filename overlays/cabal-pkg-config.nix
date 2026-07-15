@@ -39,9 +39,11 @@ final: prev:
     in prev.pkg-config.overrideAttrs (attrs:
       let
         # These vars moved from attrs to attrs.env in nixpkgs adc8900df1758eda56abd68f7d781d1df74fa531
-        # Support both for the time being.
-        targetPrefix = attrs.targetPrefix or attrs.env.targetPrefix;
-        baseBinName = attrs.baseBinName or attrs.env.baseBinName;
+        # and in later nixpkgs (>= 26.05) they are no longer in the mkDerivation
+        # args at all; they live as passthru on the wrapper derivation. Fall
+        # back through all three for the time being.
+        targetPrefix = attrs.targetPrefix or (attrs.env or { }).targetPrefix or prev.pkg-config.targetPrefix;
+        baseBinName = attrs.baseBinName or (attrs.env or { }).baseBinName or prev.pkg-config.baseBinName;
       in {
       installPhase = attrs.installPhase + ''
         mv $out/bin/${targetPrefix}${baseBinName} \
@@ -88,9 +90,11 @@ final: prev:
   cabalPkgConfigWrapper = prev.pkg-config.overrideAttrs (attrs: (
   let
     # These vars moved from attrs to attrs.env in nixpkgs adc8900df1758eda56abd68f7d781d1df74fa531
-    # Support both for the time being.
-    targetPrefix = attrs.targetPrefix or attrs.env.targetPrefix;
-    baseBinName = attrs.baseBinName or attrs.env.baseBinName;
+    # and in later nixpkgs (>= 26.05) they are no longer in the mkDerivation
+    # args at all; they live as passthru on the wrapper derivation. Fall
+    # back through all three for the time being.
+    targetPrefix = attrs.targetPrefix or (attrs.env or { }).targetPrefix or prev.pkg-config.targetPrefix;
+    baseBinName = attrs.baseBinName or (attrs.env or { }).baseBinName or prev.pkg-config.baseBinName;
   in {
     installPhase = attrs.installPhase + ''
       mv $out/bin/${targetPrefix}${baseBinName} \

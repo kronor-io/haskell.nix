@@ -158,4 +158,10 @@ in {
   #   error: inlining failed in call to ‘always_inline’ ‘void* memcpy(void*, const void*, size_t)’: target specific option mismatch
   packages.text.components.library.hardeningDisable =
     pkgs.lib.optionals pkgs.stdenv.hostPlatform.isMusl ["fortify"];
+
+  # ghc-debug-stub's cbits/stub.cpp calls inet_pton into a small buffer.
+  # glibc >= 2.42's _FORTIFY_SOURCE promotes this to a build error via the
+  # __inet_pton_chk_warn attribute-warning. Disable fortify for this package
+  # so it keeps building (the affected code path is the debug socket listener).
+  packages.ghc-debug-stub.components.library.hardeningDisable = ["fortify"];
 }
