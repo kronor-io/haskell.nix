@@ -19,6 +19,9 @@ in {
 
       ghc912 = final.haskell.compiler.ghc912;
       ghc9122 = final.haskell.compiler.ghc912;
+
+      ghc914 = final.haskell.compiler.ghc914;
+      ghc9141 = final.haskell.compiler.ghc9141;
         };
 
     # Both `cabal-install` and `nix-tools` are needed for `cabalProject`
