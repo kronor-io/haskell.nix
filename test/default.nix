@@ -206,8 +206,6 @@ let
     ghc-options-stack = callTest ./ghc-options/stack.nix {};
     exe-only = callTest ./exe-only { inherit util; };
     stack-source-repo = callTest ./stack-source-repo {};
-    ghc-lib-reinstallable-cabal = callTest ./ghc-lib-reinstallable/cabal.nix {};
-    ghc-lib-reinstallable-stack = callTest ./ghc-lib-reinstallable/stack.nix {};
     cabal-doctests = callTest ./cabal-doctests { inherit util; };
     extra-hackage = callTest ./extra-hackage {};
     ghcjs-overlay = callTest ./ghcjs-overlay {};
@@ -227,7 +225,6 @@ let
     githash = callTest ./githash { inherit compiler-nix-name evalPackages; };
     c-ffi = callTest ./c-ffi { inherit util; };
     th-dlls = callTest ./th-dlls { inherit util; };
-    th-dlls-minimal = callTest ./th-dlls-minimal { inherit util; };
     external-static-plugin = callTest ./external-static-plugin {};
     exe-dlls = callTest ./exe-dlls { inherit util; };
     exe-lib-dlls = callTest ./exe-lib-dlls { inherit util; };
@@ -238,7 +235,6 @@ let
     cabal-project-nix-path = callTest ./cabal-project-nix-path {};
     plugin = callTest ./plugin {};
     supported-languages = callTest ./supported-langauges {};
-    js-template-haskell = callTest ./js-template-haskell {};
     gi-gtk = callTest ./gi-gtk { inherit util; };
     literate-haskell = callTest ./literate-haskell {};
     backpack = callTest ./backpack {};

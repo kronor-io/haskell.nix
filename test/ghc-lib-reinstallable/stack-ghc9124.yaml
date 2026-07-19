@@ -1,5 +1,0 @@
-
-resolver: nightly-2026-05-03
-
-packages:
-- .
