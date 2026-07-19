@@ -34,7 +34,12 @@ in
     };
     use-package-keys = mkOption {
       type = bool;
-      default = true;
+      # The v1 builder supports global package overrides for packages that may
+      # not occur in a particular install plan (see configuration-nix.nix).
+      # Restricting options to the plan keys makes those definitions invalid.
+      # The v2 builder needs explicit keys to alias canonical package names to
+      # their per-instance plan IDs.
+      default = config.builderVersion == 2;
     };
     package-keys = mkOption {
       type = listOf str;

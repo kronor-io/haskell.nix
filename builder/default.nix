@@ -21,6 +21,105 @@ let
     inherit ghc haskellLib makeConfigFiles haddockBuilder ghcForComponent hsPkgs compiler nonReinstallablePkgs;
   };
 
+  # Alternative component builder that runs cabal v2-build and emits
+  # a cabal-store slice rather than going through Setup.hs.  Selected
+  # when the project sets `builderVersion = 2` (the default).  See
+  # builder/comp-v2-builder.nix for the per-kind behaviour.
+  #
+  # Build cabal-install via `haskell-nix.tool`.
+  #
+  # Two pins here:
+  #
+  #   * `builderVersion = 1` — cabal-install stays a v1 derivation.
+  #     Every v2 slice lists v2CabalInstall as a nativeBuildInput, so
+  #     producing v2CabalInstall as a v2 slice would cycle on itself.
+  #
+  #   * `compilerSelection = p: p.haskell.compiler` — use nixpkgs's
+  #     pre-built GHC rather than haskell.nix's own (which would be
+  #     built by hadrian, itself a haskell.nix project whose hackage
+  #     deps become v2 slices needing v2CabalInstall).  Pre-built
+  #     nixpkgs GHC sidesteps the entire hadrian subtree.
+  #
+  # We go through `tool` (rather than nix-tools' pre-built cabal) so
+  # we can apply our own cabal-install patches — notably
+  # prune-unreachable-sublibs.patch, which lets the solver ignore
+  # public sublibs whose deps aren't in plan.nix (e.g. vector's
+  # `benchmarks-O2` sublib needing tasty).
+  # Pick the first GHC in this list that nixpkgs ships pre-built
+  # (under `haskell.compiler.<name>`).  `ghc9141` is the
+  # preference; `ghc9124` / `ghc9123` / `ghc9122` are kept as
+  # fallbacks for nixpkgs pins that don't carry 9.14 yet — going
+  # back further than 9.12 hasn't been needed in practice.  The
+  # exact GHC doesn't show up in any UnitId hash (this just
+  # builds the patched cabal-install binary), so any of these
+  # produces an equivalent v2 builder.
+  v2CabalInstallCompiler =
+    let candidates  = [ "ghc9141" "ghc9124" "ghc9123" "ghc9122" ];
+        compilerSet = pkgsBuildBuild.haskell.compiler or {};
+        picked      = lib.findFirst (n: compilerSet ? ${n}) null candidates;
+    in if picked == null
+       then throw ("v2CabalInstall: none of [${lib.concatStringsSep ", " candidates}] "
+                + "is present in `pkgs.haskell.compiler`; bump the candidates list "
+                + "in `builder/default.nix`.")
+       else picked;
+
+  v2CabalInstall = pkgsBuildBuild.haskell-nix.tool v2CabalInstallCompiler "cabal" {
+    version = "3.16.1.0";
+    builderVersion = 1;
+    compilerSelection = p: p.haskell.compiler;
+    modules = [{
+      packages.cabal-install-solver.patches = [
+        ./cabal-install-patches/prune-unreachable-sublibs.patch
+      ];
+      packages.cabal-install.patches = [
+        ./cabal-install-patches/prune-unreachable-sublibs-installplan.patch
+        ./cabal-install-patches/skip-installed-revdeps-in-completed.patch
+        ./cabal-install-patches/setup-build-num-jobs-env.patch
+      ];
+    }];
+  };
+
+  # Shared helper that wraps a real ghc into a "shim" with cabal-
+  # near-compiler aliases, ghcjs settings patch, and native-musl
+  # iserv aliases.  Used by both `build-cabal-slice` and the v2
+  # shell so a user's shell ghc matches the slice's ghc as closely
+  # as the use case allows.
+  makeGhcShim = import ./ghc-shim.nix {
+    inherit stdenv lib pkgsBuildBuild haskellLib;
+  };
+
+  buildCabalStoreSlice = import ./build-cabal-slice.nix {
+    inherit stdenv lib ghc pkgs pkgsBuildBuild buildPackages haskellLib makeGhcShim;
+    cabal-install = v2CabalInstall;
+  };
+
+  # Helper that composes a list of v2 slices into one cabal-store
+  # layout.  Used by `comp-v2-builder` to attach a `.store`
+  # derivation to each slice (containing the component's
+  # *dependencies* — not the component itself), and by the v2 shell
+  # to compose the user-facing dep store.
+  composeStore = import ./compose-store.nix {
+    inherit lib ghc;
+    inherit (pkgs) runCommand;
+    lndir = pkgs.buildPackages.lndir or pkgs.buildPackages.xorg.lndir;
+  };
+  # If the host platform has cross-TH plumbing (currently only
+  # windows via overlays/windows.nix) it lives at
+  # `pkgs.haskell-nix.templateHaskell.<compiler-nix-name>`.  Pull
+  # it out here so comp-v2-builder doesn't need its own
+  # compiler-nix-name lookup just to wrap the ghc we already have.
+  # Honour the project-level `crossTemplateHaskellSupport` switch
+  # so projects that the wrapper itself depends on (iserv-proxy)
+  # can opt out, breaking the otherwise-circular dep on the
+  # wrapped ghc's inputs.
+  templateHaskell =
+    if !crossTemplateHaskellSupport then null
+    else pkgs.haskell-nix.templateHaskell.${compiler-nix-name} or null;
+
+  comp-v2-builder = haskellLib.weakCallPackage pkgs ./comp-v2-builder.nix {
+    inherit ghc hsPkgs buildCabalStoreSlice templateHaskell haskellLib composeStore;
+  };
+
   haddockBuilder = haskellLib.weakCallPackage pkgs ./haddock-builder.nix {
     inherit ghc ghcForComponent haskellLib makeConfigFiles nonReinstallablePkgs;
   };

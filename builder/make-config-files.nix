@@ -49,6 +49,7 @@ let
     # default is for them.
     ("lib/${ghcCommand}-${ghc.version}"
       + lib.optionalString (__compareVersions ghc.version "9.6.1" >= 0) "/lib");
+  docDir         = ghc.docDir or "share/doc/ghc/html";
   packageCfgDir  = "${libDir}/package.conf.d";
 
   libDeps = haskellLib.uniqueWithName (
@@ -173,6 +174,10 @@ let
       fi
     done
   ''
+  # Handle Backpack instantiations recorded in current install plans.
+  + (builtins.concatStringsSep "\n" (lib.mapAttrsToList (modname: val: ''
+    echo "--instantiate-with=${modname}=$(cut -d ' ' -f 2 ${val.unit}/envDep):${val.module}" >> $configFiles/configure-flags
+  '') instantiations))
   # This code originates in the `generic-builder.nix` from nixpkgs.  However GHC has been fixed
   # to drop unused libraries referenced from libraries; and this patch is usually included in the
   # nixpkgs's GHC builds.  This doesn't sadly make this stupid hack unnecessary.  It resurfaces in

@@ -294,78 +294,20 @@ let
 
   fixedProject = replaceSourceRepos rawCabalProject;
 
-  inherit (ghc) dummy-ghc-data;
+  # Current upstream generates eval-time GHC metadata directly instead of
+  # relying on the removed dummy-ghc-data overlay/materialization.
+  dummy-ghc = import ./dummy-ghc.nix { inherit pkgs evalPackages ghc; };
 
-  # Dummy `ghc` that uses the captured output
-  dummy-ghc = evalPackages.writeTextFile {
-    name = "dummy-" + ghc.name;
-    executable = true;
-    destination = "/bin/${ghc.targetPrefix}ghc";
-    text = ''
-      #!${evalPackages.runtimeShell}
-      case "$*" in
-        --version*)
-          cat ${dummy-ghc-data}/ghc/version
-          ;;
-        --numeric-version*)
-          cat ${dummy-ghc-data}/ghc/numeric-version
-          ;;
-      ${pkgs.lib.optionalString (ghc.targetPrefix == "js-unknown-ghcjs-") ''
-        --numeric-ghc-version*)
-          cat ${dummy-ghc-data}/ghc/numeric-ghc-version
-          ;;
-        --numeric-ghcjs-version*)
-          cat ${dummy-ghc-data}/ghc/numeric-ghcjs-version
-          ;;
-      ''}
-        --supported-languages*)
-          cat ${dummy-ghc-data}/ghc/supported-languages
-          ;;
-        --print-global-package-db*)
-          echo "$out/dumby-db"
-          ;;
-        --info*)
-          cat ${dummy-ghc-data}/ghc/info
-          ;;
-        --print-libdir*)
-          echo ${dummy-ghc-data}/ghc/libdir
-          ;;
-        *)
-          echo "Unknown argument '$*'" >&2
-          exit 1
-          ;;
-        esac
-      exit 0
-    '';
-  };
-
-  # Dummy `ghc-pkg` that uses the captured output
+  # This fork uses a cached nixpkgs GHC and does not support cross builds, so
+  # delegating ghc-pkg queries to that compiler avoids restoring the deleted
+  # dummy-ghc-data and nix-tools-unchecked machinery.
   dummy-ghc-pkg = evalPackages.writeTextFile {
     name = "dummy-pkg-" + ghc.name;
     executable = true;
     destination = "/bin/${ghc.targetPrefix}ghc-pkg";
     text = ''
       #!${evalPackages.runtimeShell}
-      case "$*" in
-        --version)
-          cat ${dummy-ghc-data}/ghc-pkg/version
-          ;;
-      ${pkgs.lib.optionalString (ghc.targetPrefix == "js-unknown-ghcjs-") ''
-        --numeric-ghcjs-version)
-          cat ${dummy-ghc-data}/ghc-pkg/numeric-ghcjs-version
-          ;;
-      ''}
-        'dump --global -v0')
-          cat ${dummy-ghc-data}/ghc-pkg/dump-global
-          ;;
-        *)
-          echo "Unknown argument '$*'. " >&2
-          echo "Additional ghc-pkg-options are not currently supported." >&2
-          echo "See https://github.com/input-output-hk/haskell.nix/pull/658" >&2
-          exit 1
-          ;;
-        esac
-      exit 0
+      exec ${ghc}/bin/${ghc.targetPrefix}ghc-pkg "$@"
     '';
   };
 
