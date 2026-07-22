@@ -51,18 +51,18 @@
         "type": "github"
       }
     },
-    "nixpkgs-2505": {
+    "nixpkgs-2605": {
       "locked": {
-        "lastModified": 1756650686,
-        "narHash": "sha256-kgf2GzjNcyZ9A68+NuRTiYOGgB3Ux8Bw4KU5WjjYk1A=",
+        "lastModified": 1784753046,
+        "narHash": "sha256-SMBjyNAg+N3ZcZOFrHc9XgHTt7d/l1Cuo/qKj5AzYe0=",
         "owner": "NixOS",
         "repo": "nixpkgs",
-        "rev": "c8f89b1c7ce876a7d0a7f172f8fc78c63176ab2b",
+        "rev": "04c83a648c9a5dfa2840375c13815655b5393480",
         "type": "github"
       },
       "original": {
         "owner": "NixOS",
-        "ref": "release-25.05",
+        "ref": "release-26.05",
         "repo": "nixpkgs",
         "type": "github"
       }
@@ -73,9 +73,9 @@
         "hackage": "hackage",
         "hackage-db": "hackage-db",
         "nixpkgs": [
-          "nixpkgs-2505"
+          "nixpkgs-2605"
         ],
-        "nixpkgs-2505": "nixpkgs-2505"
+        "nixpkgs-2605": "nixpkgs-2605"
       }
     }
   },

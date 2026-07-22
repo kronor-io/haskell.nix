@@ -1,10 +1,11 @@
 final: prev:
 let
-    buildBootstrapper.compilerNixName = "ghc912";
+    buildBootstrapper.compilerNixName = "ghc914";
 
     latestVer = {
       "9.8" = "9.8.1";
       "9.12" = "9.12.2";
+      "9.14" = "9.14.1";
     };
 
 in {
@@ -19,6 +20,9 @@ in {
 
       ghc912 = final.haskell.compiler.ghc912;
       ghc9122 = final.haskell.compiler.ghc912;
+
+      ghc914 = final.haskell.compiler.ghc914;
+      ghc9141 = final.haskell.compiler.ghc914;
         };
 
     # Both `cabal-install` and `nix-tools` are needed for `cabalProject`

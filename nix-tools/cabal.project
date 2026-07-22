@@ -34,7 +34,9 @@ allow-newer:
     hnix:filepath,
     hnix:time,
     nix-derivation:filepath,
-    hnix:extra
+    hnix:extra,
+    hnix:hashable,
+    serialise:time,
 
 
 source-repository-package
@@ -44,7 +46,9 @@ source-repository-package
   --sha256: 11g395vrrsaasl1ssk8qfbcc9wx6aygipsldyclgn4szpm4xzm7h
 
 constraints:
-  th-abstraction == 0.7.1.0
+  th-abstraction == 0.7.2.0,
+  Cabal == 3.16.1.0,
+  cabal-install == 3.16.1.0
 
 package nix-tools
   ghc-options: -freverse-errors

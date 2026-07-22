@@ -2,8 +2,8 @@
   description = "Alternative Haskell Infrastructure for Nixpkgs";
 
   inputs = {
-    nixpkgs.follows = "nixpkgs-2505";
-    nixpkgs-2505 = { url = "github:NixOS/nixpkgs/release-25.05"; };
+    nixpkgs.follows = "nixpkgs-2605";
+    nixpkgs-2605 = { url = "github:NixOS/nixpkgs/release-26.05"; };
     flake-compat = { url = "github:input-output-hk/flake-compat/hkm/gitlab-fix"; flake = false; };
     hackage = {
       url = "github:kronor-io/hackage.nix/main";

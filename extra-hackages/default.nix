@@ -5,5 +5,5 @@ with builtins; mapAttrs (_: mapAttrs (_: data: rec {
  };
 })) {
   "ghc-internal" = import ./nix/ghc-internal.nix;
-
+  "ghc-prim" = import ./nix/ghc-prim.nix;
 }

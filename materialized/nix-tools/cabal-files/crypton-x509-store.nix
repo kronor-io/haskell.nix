@@ -11,7 +11,7 @@
     flags = {};
     package = {
       specVersion = "1.10";
-      identifier = { name = "crypton-x509-store"; version = "1.6.9"; };
+      identifier = { name = "crypton-x509-store"; version = "1.8.0"; };
       license = "BSD-3-Clause";
       copyright = "Vincent Hanquez <vincent@snarc.org>";
       maintainer = "Kazu Yamamoto <kazu@iij.ad.jp>";
@@ -27,16 +27,16 @@
         depends = [
           (hsPkgs."base" or (errorHandler.buildDepError "base"))
           (hsPkgs."bytestring" or (errorHandler.buildDepError "bytestring"))
-          (hsPkgs."mtl" or (errorHandler.buildDepError "mtl"))
           (hsPkgs."containers" or (errorHandler.buildDepError "containers"))
+          (hsPkgs."crypton" or (errorHandler.buildDepError "crypton"))
+          (hsPkgs."crypton-asn1-encoding" or (errorHandler.buildDepError "crypton-asn1-encoding"))
+          (hsPkgs."crypton-asn1-types" or (errorHandler.buildDepError "crypton-asn1-types"))
+          (hsPkgs."crypton-pem" or (errorHandler.buildDepError "crypton-pem"))
+          (hsPkgs."crypton-x509" or (errorHandler.buildDepError "crypton-x509"))
           (hsPkgs."directory" or (errorHandler.buildDepError "directory"))
           (hsPkgs."filepath" or (errorHandler.buildDepError "filepath"))
-          (hsPkgs."pem" or (errorHandler.buildDepError "pem"))
-          (hsPkgs."asn1-types" or (errorHandler.buildDepError "asn1-types"))
-          (hsPkgs."asn1-encoding" or (errorHandler.buildDepError "asn1-encoding"))
-          (hsPkgs."crypton" or (errorHandler.buildDepError "crypton"))
-          (hsPkgs."crypton-x509" or (errorHandler.buildDepError "crypton-x509"))
-        ];
+          (hsPkgs."mtl" or (errorHandler.buildDepError "mtl"))
+        ] ++ pkgs.lib.optional (!system.isWindows) (hsPkgs."unix" or (errorHandler.buildDepError "unix"));
         buildable = true;
       };
       tests = {
@@ -55,9 +55,9 @@
     };
   } // {
     src = pkgs.lib.mkDefault (pkgs.fetchurl {
-      url = "http://hackage.haskell.org/package/crypton-x509-store-1.6.9.tar.gz";
-      sha256 = "3e6218af12e039cc291d19792db044df1647b5cf0bbc60b909a027e7595a256f";
+      url = "http://hackage.haskell.org/package/crypton-x509-store-1.8.0.tar.gz";
+      sha256 = "a77da8312640f3315453768c895de025f9f5f9714d92dcb1f33a1924720ffa7e";
     });
   }) // {
-    package-description-override = "Name:                crypton-x509-store\nversion:             1.6.9\nDescription:         X.509 collection accessing and storing methods for certificate, crl, exception list\nLicense:             BSD3\nLicense-file:        LICENSE\nCopyright:           Vincent Hanquez <vincent@snarc.org>\nAuthor:              Vincent Hanquez <vincent@snarc.org>\nMaintainer:          Kazu Yamamoto <kazu@iij.ad.jp>\nSynopsis:            X.509 collection accessing and storing methods\nBuild-Type:          Simple\nCategory:            Data\nstability:           experimental\nHomepage:            https://github.com/kazu-yamamoto/crypton-certificate\nCabal-Version:       >= 1.10\n\nLibrary\n  Default-Language:  Haskell2010\n  Build-Depends:     base >= 3 && < 5\n                   , bytestring\n                   , mtl\n                   , containers\n                   , directory\n                   , filepath\n                   , pem >= 0.1 && < 0.3\n                   , asn1-types >= 0.3 && < 0.4\n                   , asn1-encoding >= 0.9 && < 0.10\n                   , crypton\n                   , crypton-x509 >= 1.7.2\n  Exposed-modules:   Data.X509.CertificateStore\n                     Data.X509.File\n                     Data.X509.Memory\n  ghc-options:       -Wall\n\nTest-Suite test-x509-store\n  Default-Language:  Haskell2010\n  type:              exitcode-stdio-1.0\n  hs-source-dirs:    Tests\n  Main-is:           Tests.hs\n  Build-Depends:     base >= 3 && < 5\n                   , bytestring\n                   , tasty\n                   , tasty-hunit\n                   , crypton-x509\n                   , crypton-x509-store\n  ghc-options:       -Wall\n\nsource-repository head\n  type:     git\n  location: git://github.com/vincenthz/hs-certificate\n  subdir:   x509-store\n";
+    package-description-override = "cabal-version:      >=1.10\nname:               crypton-x509-store\nversion:            1.8.0\nlicense:            BSD3\nlicense-file:       LICENSE\ncopyright:          Vincent Hanquez <vincent@snarc.org>\nmaintainer:         Kazu Yamamoto <kazu@iij.ad.jp>\nauthor:             Vincent Hanquez <vincent@snarc.org>\nstability:          experimental\nhomepage:           https://github.com/kazu-yamamoto/crypton-certificate\nsynopsis:           X.509 collection accessing and storing methods\ndescription:\n    X.509 collection accessing and storing methods for certificate, crl, exception list\n\ncategory:           Data\nbuild-type:         Simple\nextra-source-files: ChangeLog.md\n\nsource-repository head\n    type:     git\n    location: https://github.com/kazu-yamamoto/crypton-certificate\n    subdir:   x509-store\n\nlibrary\n    exposed-modules:\n        Data.X509.CertificateStore\n        Data.X509.File\n        Data.X509.Memory\n\n    default-language: Haskell2010\n    ghc-options:      -Wall\n    build-depends:\n        base >=3 && <5,\n        bytestring,\n        containers,\n        crypton,\n        crypton-asn1-encoding >=0.10.0 && <0.11,\n        crypton-asn1-types >=0.4.1 && <0.5,\n        crypton-pem >=0.2.4 && <0.4,\n        crypton-x509 >=1.8.0,\n        directory,\n        filepath,\n        mtl\n\n    if !os(windows)\n        build-depends: unix\n\ntest-suite test-x509-store\n    type:             exitcode-stdio-1.0\n    main-is:          Tests.hs\n    hs-source-dirs:   Tests\n    default-language: Haskell2010\n    ghc-options:      -Wall\n    build-depends:\n        base >=3 && <5,\n        bytestring,\n        tasty,\n        tasty-hunit,\n        crypton-x509,\n        crypton-x509-store\n";
   }

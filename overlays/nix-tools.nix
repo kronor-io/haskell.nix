@@ -4,10 +4,10 @@ final: prev:
     prev.haskell-nix // {
       nix-tools =
         let nix-tools-pkgs = final.haskell-nix.cabalProjectWithPlan
-              { src = ../nix-tools; compiler-nix-name = "ghc912"; index-state = "2025-01-13T20:06:10Z"; }
+              { src = ../nix-tools; compiler-nix-name = "ghc914"; index-state = "2026-06-30T23:54:30Z"; }
               (_: {
               "extra-hackages" = [];
-              "index-state-max" = "2025-01-17T00:00:00Z";
+              "index-state-max" = "2026-06-30T23:54:30Z";
               "projectNix" = ../materialized/nix-tools;
               "sourceRepos" = [
                 (final.pkgs.fetchgit {

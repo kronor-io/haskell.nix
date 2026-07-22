@@ -6,15 +6,103 @@ pkgs:
 
     # Only include derivations that exist in the current pkgs.
     # This allows us to use this mapping to be used in allPkgConfigWrapper.
-    # See ./overlas
+    # See ./overlays
     lookupAttrsIn = x: __mapAttrs (_pname: names:
-        # The first entry is should be used for the version by allPkgConfigWrapper
-        # so we need it to be present.
-        if __length names != 0 && x ? ${__head names}
-          then
-            pkgs.lib.concatMap (
-              name: if x ? ${name} then [ x.${name} ] else []) names
-          else []);
+      # The first entry is should be used for the version by allPkgConfigWrapper
+      # so we need it to be present.
+      with lib; optionals (__length names != 0 && x ? ${__head names})
+        (concatMap
+          (name: optionals (x ? ${name})
+            (let p = __tryEval (x.${name}); in optional p.success p.value))
+          names));
+
+    # Prefer the new package name when available, fall back to old name
+    # for backwards compatibility with older nixpkgs.
+    prefer = new: old: if pkgs ? ${new} then new else old;
+
+    # Compatibility set for the deprecated xorg.* package set.
+    # New nixpkgs promotes xorg packages to top-level with new names.
+    # This set maps old xorg attribute names to the new top-level packages,
+    # falling back to pkgs.xorg for older nixpkgs.
+    xorgCompat = let
+      xorg = pkgs.xorg or {};
+      renames = {
+      fontutil = "font-util";
+      libFS = "libfs";
+      libICE = "libice";
+      libSM = "libsm";
+      libWindowsWM = "libwindowswm";
+      libX11 = "libx11";
+      libXScrnSaver = "libxscrnsaver";
+      libXTrap = "libxtrap";
+      libXau = "libxau";
+      libXaw = "libxaw";
+      libXaw3d = "libxaw3d";
+      libXcomposite = "libxcomposite";
+      libXcursor = "libxcursor";
+      libXdamage = "libxdamage";
+      libXdmcp = "libxdmcp";
+      libXext = "libxext";
+      libXfixes = "libxfixes";
+      libXfont = "libxfont_1";
+      libXfont2 = "libxfont_2";
+      libXft = "libxft";
+      libXi = "libxi";
+      libXinerama = "libxinerama";
+      libXmu = "libxmu";
+      libXp = "libxp";
+      libXpm = "libxpm";
+      libXpresent = "libxpresent";
+      libXrandr = "libxrandr";
+      libXrender = "libxrender";
+      libXres = "libxres";
+      libXt = "libxt";
+      libXtst = "libxtst";
+      libXv = "libxv";
+      libXvMC = "libxvmc";
+      libXxf86dga = "libxxf86dga";
+      libXxf86misc = "libxxf86misc";
+      libXxf86vm = "libxxf86vm";
+      libdmx = "libdmx";
+      libfontenc = "libfontenc";
+      libpciaccess = "libpciaccess";
+      libpthreadstubs = "libpthread-stubs";
+      libxcb = "libxcb";
+      libxcvt = "libxcvt";
+      libxkbfile = "libxkbfile";
+      libxshmfence = "libxshmfence";
+      lndir = "lndir";
+      pixman = "pixman";
+      utilmacros = "util-macros";
+      xbitmaps = "xbitmaps";
+      xcbproto = "xcb-proto";
+      xcbutil = "libxcb-util";
+      xcbutilcursor = "libxcb-cursor";
+      xcbutilerrors = "libxcb-errors";
+      xcbutilimage = "libxcb-image";
+      xcbutilkeysyms = "libxcb-keysyms";
+      xcbutilrenderutil = "libxcb-render-util";
+      xcbutilwm = "libxcb-wm";
+      xf86inputevdev = "xf86-input-evdev";
+      xf86inputjoystick = "xf86-input-joystick";
+      xf86inputlibinput = "xf86-input-libinput";
+      xf86inputmouse = "xf86-input-mouse";
+      xf86inputsynaptics = "xf86-input-synaptics";
+      xkbcomp = "xkbcomp";
+      xkeyboardconfig = "xkeyboard-config";
+      xlibsWrapper = "xlibsWrapper";
+      xorgproto = "xorgproto";
+      xorgserver = "xorg-server";
+      xorgsgmldoctools = "xorg-sgml-doctools";
+      xtrans = "xtrans";
+      };
+    in xorg // builtins.listToAttrs (builtins.concatMap (entry:
+      let old = entry.name; new = entry.value; in
+      if pkgs ? ${new} then [{ name = old; value = pkgs.${new}; }]
+      else if xorg ? ${old} then [{ name = old; value = xorg.${old}; }]
+      else []
+    ) (lib.mapAttrsToList lib.nameValuePair renames));
+
   in lookupAttrsIn pkgs ({
     # Based on https://github.com/NixOS/cabal2nix/blob/11c68fdc79461fb74fa1dfe2217c3709168ad752/src/Distribution/Nixpkgs/Haskell/FromCabal/Name.hs#L23
 
@@ -23,7 +111,7 @@ pkgs:
 
     "adns"                               = [ "adns" ];
     "alut"                               = [ "freealut" ];
-    "asound"                             = [ "alsa-lib" ];
+    "asound"                             = [ "alsaLib" ];
     "b2"                                 = [ "libb2" ];
     "c++"                                = []; # What is that?
     "cairo-1.0"                          = [ "cairo" ];
@@ -83,7 +171,7 @@ pkgs:
     "stdc++.dll"                         = []; # What is that?
     "systemd-journal"                    = [ "systemd" ];
     "tag_c"                              = [ "taglib" ];
-    "webkit2gtk"                         = [ "webkitgtk_4_1" ];
+    "webkit2gtk"                         = [ "webkitgtk_4_0" ]; # This is somewhat arbitary
     "xml2"                               = [ "libxml2" ];
     "yaml"                               = [ "libyaml" ];
     "z"                                  = [ "zlib" ];
@@ -100,7 +188,7 @@ pkgs:
 #    "cgl" = [ "CoinMP" ];
 #    "clp" = [ "CoinMP" ];
 #    "coindatasample" = [ "CoinMP" ];
-    "coinmp" = [ "coinmp" ];
+    "coinmp" = [ "CoinMP" ];
 #    "coinutils" = [ "CoinMP" ];
 #    "osi-cbc" = [ "CoinMP" ];
 #    "osi-clp" = [ "CoinMP" ];
@@ -974,6 +1062,10 @@ pkgs:
 #    "bash" = [ "bashInteractiveFHS" ];
 #    "libbcc" = [ "bcc" ]; # error: bcc-0.24.0 not supported for interpreter python3.10 on macOS
     "libbcg729" = [ "bcg729" ];
+    "bctoolbox" = [ "bctoolbox" ];
+    "bctoolbox-tester" = [ "bctoolbox" ];
+    "bcunit" = [ "bcunit" ];
+    "belle-sip" = [ "belle-sip" ];
     "bemenu" = [ "bemenu" ];
     "biblesync" = [ "biblesync" ];
     "bicon" = [ "bicon" ];
@@ -1019,6 +1111,8 @@ pkgs:
     "BoogieVCGeneration" = [ "boogie" ];
     "Provers.SMTLib" = [ "boogie" ];
     "boolstuff-0.1" = [ "boolstuff" ];
+    "botan-2" = [ "botan2" ];
+    "botan" = [ "botan2" ];
     "boxfort" = [ "boxfort" ];
     "libbrasero-burn3" = [ "brasero" ];
     "libbrasero-media3" = [ "brasero" ];
@@ -1117,20 +1211,20 @@ pkgs:
     "check" = [ "check" ];
     "chibi-scheme" = [ "chibi" ];
     "libchromaprint" = [ "chromaprint" ];
-    # "cscreensaver" = [ "cinnamon" ];
-    # "libcinnamon-control-center" = [ "cinnamon" ];
-    # "libcinnamon-menu-3.0" = [ "cinnamon" ];
-    # "libmuffin" = [ "cinnamon" ];
-    # "muffin-clutter-0" = [ "cinnamon" ];
-    # "muffin-clutter-x11-0" = [ "cinnamon" ];
-    # "muffin-cogl-0" = [ "cinnamon" ];
-    # "muffin-cogl-pango-0" = [ "cinnamon" ];
-    # "muffin-cogl-path-0" = [ "cinnamon" ];
-    # "muffin-plugins" = [ "cinnamon" ];
-    # "pix-2.8" = [ "cinnamon" ];
-    # "xreader-document-1.5" = [ "cinnamon" ];
-    # "xreader-view-1.5" = [ "cinnamon" ];
-    # "xviewer" = [ "cinnamon" ];
+    "cscreensaver" = [ "cinnamon" ];
+    "libcinnamon-control-center" = [ "cinnamon" ];
+    "libcinnamon-menu-3.0" = [ "cinnamon" ];
+    "libmuffin" = [ "cinnamon" ];
+    "muffin-clutter-0" = [ "cinnamon" ];
+    "muffin-clutter-x11-0" = [ "cinnamon" ];
+    "muffin-cogl-0" = [ "cinnamon" ];
+    "muffin-cogl-pango-0" = [ "cinnamon" ];
+    "muffin-cogl-path-0" = [ "cinnamon" ];
+    "muffin-plugins" = [ "cinnamon" ];
+    "pix-2.8" = [ "cinnamon" ];
+    "xreader-document-1.5" = [ "cinnamon" ];
+    "xreader-view-1.5" = [ "cinnamon" ];
+    "xviewer" = [ "cinnamon" ];
     "cjose" = [ "cjose" ];
     "libcjson" = [ "cjson" ];
     "libclamav" = [ "clamav" ];
@@ -1159,6 +1253,8 @@ pkgs:
     "clipp" = [ "clipp" ];
     "polyclipping" = [ "clipper" ];
     "cln" = [ "cln" ];
+    "cloog-isl" = [ "cloog" ];
+#    "cloog-isl" = [ "cloog_0_18_0" ];
     "clp" = [ "clp" ];
 #    "coindatanetlib" = [ "clp" ];
 #    "coindatasample" = [ "clp" ];
@@ -1166,7 +1262,7 @@ pkgs:
 #    "osi" = [ "clp" ];
     "osi-clp" = [ "clp" ];
 #    "osi-unittests" = [ "clp" ];
-    "libclucene-core" = [ "clucene_core_2" ];
+    "libclucene-core" = [ (prefer "clucene-core_2" "clucene_core_2") ];
     "clustalo" = [ "clustal-omega" ];
     "cally-1.0" = [ "clutter" ];
     "clutter-1.0" = [ "clutter" ];
@@ -1199,6 +1295,7 @@ pkgs:
     "wxsmith-contrib" = [ "codeblocksFull" ];
     "codec2" = [ "codec2" ];
     "coeurl" = [ "coeurl" ];
+    "cogcore" = [ "cog" ];
     "cogl-1.0" = [ "cogl" ];
     "cogl-2.0-experimental" = [ "cogl" ];
     "cogl-gl-1.0" = [ "cogl" ];
@@ -1290,9 +1387,14 @@ pkgs:
 #    "davix" = [ "davix-copy" ];
     "dbus-1" = [ "dbus" ];
     "dbus-glib-1" = [ "dbus-glib" ];
+    "dbus-sharp-1.0" = [ "dbus-sharp-1_0" ];
+    "dbus-sharp-2.0" = [ "dbus-sharp-2_0" ];
+    "dbus-sharp-glib-1.0" = [ "dbus-sharp-glib-1_0" ];
+    "dbus-sharp-glib-2.0" = [ "dbus-sharp-glib-2_0" ];
     "dbus-c++-1" = [ "dbus_cplusplus" ];
     "dbus-c++-glib-1" = [ "dbus_cplusplus" ];
     "dcadec" = [ "dcadec" ];
+    "dclib" = [ "dclib" ];
     "dconf" = [ "dconf" ];
     "ddccontrol" = [ "ddccontrol" ];
     "ddcutil" = [ "ddcutil" ];
@@ -1312,9 +1414,9 @@ pkgs:
     "libmarkdown" = [ "discount" ];
     "disnix" = [ "disnix" ];
     "ddjvuapi" = [ "djvulibre" ];
-    "dleyna-core-1.0" = [ "dleyna" ];
-    "dleyna-renderer-service-1.0" = [ "dleyna" ];
-    "dleyna-server-service-1.0" = [ "dleyna" ];
+    "dleyna-core-1.0" = [ "dleyna-core" ];
+    "dleyna-renderer-service-1.0" = [ "dleyna-renderer" ];
+    "dleyna-server-service-1.0" = [ "dleyna-server" ];
     "dlib-1" = [ "dlib" ];
     "docopt" = [ "docopt_cpp" ];
 #    "libbitcoinconsensus" = [ "dogecoin" ];
@@ -1371,13 +1473,14 @@ pkgs:
     "dspam" = [ "dspam" ];
     "dssi" = [ "dssi" ];
     "duktape" = [ "duktape" ];
-    "dumb" = [ "libopenmpt" ];
+    "dumb" = [ "dumb" ];
     "libduo" = [ "duo-unix" ];
     "dydisnix" = [ "dydisnix" ];
     "com_err" = [ "e2fsprogs" ];
     "e2p" = [ "e2fsprogs" ];
     "ext2fs" = [ "e2fsprogs" ];
     "ss" = [ "e2fsprogs" ];
+    "easyloggingpp" = [ "easyloggingpp" ];
     "eccodes" = [ "eccodes" ];
     "eccodes_f90" = [ "eccodes" ];
     "ecdsautil" = [ "ecdsautils" ];
@@ -1407,7 +1510,7 @@ pkgs:
     "enca" = [ "enca" ];
 #    "enchant-2" = [ "enchant" ];
 #    "enchant" = [ "enchant1" ];
-    "enchant-2" = [ "enchant2" ];
+    "enchant-2" = [ (prefer "enchant_2" "enchant2") ];
     "libenet" = [ "enet" ];
     "ecore-audio" = [ "enlightenment" ];
     "ecore-con" = [ "enlightenment" ];
@@ -1502,7 +1605,7 @@ pkgs:
 #    "gamin" = [ "fam" ];
     "farstream-0.2" = [ "farstream" ];
     "fast-cpp-csv-parser" = [ "fast-cpp-csv-parser" ];
-    "libfastjson" = [ "fastJson" ];
+    "libfastjson" = [ (prefer "libfastjson" "fastJson") ];
     "fasttext" = [ "fasttext" ];
     "FAudio" = [ "faudio" ];
     "fcft" = [ "fcft" ];
@@ -1641,6 +1744,7 @@ pkgs:
 #    "libgme" = [ "game-music-emu" ];
     "gamemode" = [ "gamemode" ];
     "libgamemodeauto" = [ "gamemode" ];
+    "gamin" = [ "gamin" ];
     "gammu" = [ "gammu" ];
     "gammu-smsd" = [ "gammu" ];
     "ganv-1" = [ "ganv" ];
@@ -1658,7 +1762,7 @@ pkgs:
     "gdk-pixbuf-2.0" = [ "gdk-pixbuf" ];
     "gdk-pixbuf-xlib-2.0" = [ "gdk-pixbuf-xlib" ];
     "gdl-3.0" = [ "gdl" ];
-
+    "gdome2" = [ "gdome2" ];
     "geany" = [ "geany" ];
     "libgeda" = [ "geda" ];
     "gegl-0.4" = [ "gegl" ];
@@ -1681,8 +1785,10 @@ pkgs:
     "getdns" = [ "getdns" ];
     "gexiv2" = [ "gexiv2" ];
     "gf2x" = [ "gf2x" ];
+    "libgfbgraph-0.2" = [ "gfbgraph" ];
     "gflags" = [ "gflags" ];
     "libgfshare" = [ "gfshare" ];
+    "ggobi" = [ "ggobi" ];
     "ggzcore" = [ "ggz_base_libs" ];
     "ggzmod" = [ "ggz_base_libs" ];
     "libggz" = [ "ggz_base_libs" ];
@@ -1698,14 +1804,14 @@ pkgs:
     "givaro" = [ "givaro" ];
     "gjs-1.0" = [ "gjs" ];
     "gkrellm" = [ "gkrellm" ];
-    "libglabels-3.0" = [ "glabels-qt" ];
-    "libglbarcode-3.0" = [ "glabels-qt" ];
+    "libglabels-3.0" = [ "glabels" ];
+    "libglbarcode-3.0" = [ "glabels" ];
     "gladeui-2.0" = [ "glade" ];
     "libglee" = [ "glee" ];
     "glew" = [ "glew" ];
 #    "glew" = [ "glew-egl" ];
 #    "glew" = [ "glew110" ];
-    "glewmx" = [ "glew110" ];
+    "glewmx" = [ (prefer "glew_1_10" "glew110") ];
 #    "glfw3" = [ "glfw" ];
 #    "glfw3" = [ "glfw-wayland" ];
     "libglfw" = [ "glfw2" ];
@@ -1738,12 +1844,16 @@ pkgs:
 #    "gmime-2.6" = [ "gmime" ];
     "gmime-2.6" = [ "gmime2" ];
     "gmime-3.0" = [ "gmime3" ];
+    "libgmni" = [ "gmni" ];
     "gmp" = [ "gmp" ];
     "gmpxx" = [ "gmp" ];
 #    "gmp" = [ "gmp6" ];
 #    "gmpxx" = [ "gmp6" ];
+    "gmpc" = [ "gmpc" ];
 #    "gmp" = [ "gmpxx" ];
 #    "gmpxx" = [ "gmpxx" ];
+    "gmlib" = [ "gmtk" ];
+    "gmtk" = [ "gmtk" ];
     "gnet-2.0" = [ "gnet" ];
     "gnome-builder-42.1" = [ "gnome-builder" ];
     "gnome-bg-4" = [ "gnome-desktop" ];
@@ -1914,9 +2024,9 @@ pkgs:
     "gobject-introspection-no-export-1.0" = [ "gobject-introspection" ];
     "libgoffice-0.10" = [ "goffice" ];
     "gom-1.0" = [ "gom" ];
-    "goocanvas" = [ "goocanvas" ];
-    "goocanvas-2.0" = [ "goocanvas2" ];
-    "goocanvas-3.0" = [ "goocanvas3" ];
+    "goocanvas" = [ (prefer "goocanvas_1" "goocanvas") ];
+    "goocanvas-2.0" = [ (prefer "goocanvas_2" "goocanvas2") ];
+    "goocanvas-3.0" = [ (prefer "goocanvas_3" "goocanvas3") ];
     "goocanvasmm-2.0" = [ "goocanvasmm2" ];
     "googleapis" = [ "google-cloud-cpp" ];
     "google_cloud_cpp_api_annotations_protos" = [ "google-cloud-cpp" ];
@@ -2057,6 +2167,7 @@ pkgs:
     "libgsasl" = [ "gsasl" ];
     "gsettings-desktop-schemas" = [ "gsettings-desktop-schemas" ];
     "gsettings-qt" = [ "gsettings-qt" ];
+    "gsignond" = [ "gsignond" ];
     "gsl" = [ "gsl" ];
 #    "gsl" = [ "gsl_1" ];
     "gsoapck" = [ "gsoap" ];
@@ -2137,12 +2248,14 @@ pkgs:
     "peasd-3" = [ "gtkd" ];
     "vted-3" = [ "gtkd" ];
     "gtkdatabox" = [ "gtkdatabox" ];
+    "gtkextra-3.0" = [ "gtkextra" ];
     "gtkimageview" = [ "gtkimageview" ];
     "gdkmm-2.4" = [ "gtkmm2" ];
     "gtkmm-2.4" = [ "gtkmm2" ];
     "gdkmm-3.0" = [ "gtkmm3" ];
     "gtkmm-3.0" = [ "gtkmm3" ];
     "gtkmm-4.0" = [ "gtkmm4" ];
+#    "libgtkpod-1.1.0" = [ "gtkpod" ];
 #    "gtksourceview-3.0" = [ "gtksourceview" ];
     "gtksourceview-3.0" = [ "gtksourceview3" ];
     "gtksourceview-4" = [ "gtksourceview4" ];
@@ -2183,7 +2296,7 @@ pkgs:
     "gwengui-gtk3" = [ "gwenhywfar" ];
     "gwengui-qt5" = [ "gwenhywfar" ];
     "gwenhywfar" = [ "gwenhywfar" ];
-    "g-wrap-2.0-guile" = [ "gwrap" ];
+    "g-wrap-2.0-guile" = [ (prefer "g-wrap" "gwrap") ];
     "gwyddion" = [ "gwyddion" ];
     "libh2o-evloop" = [ "h2o" ];
     "libh2o" = [ "h2o" ];
@@ -2387,6 +2500,7 @@ pkgs:
     "hdf5_cpp-1.10.6" = [ "itk" ];
 #    "libopenjp2" = [ "itk" ];
 #    "libopenjp2" = [ "itk4" ];
+    "itpp" = [ "itpp" ];
 #    "jack" = [ "jack1" ];
 #    "jack" = [ "jack2" ];
     "jags" = [ "jags" ];
@@ -2429,7 +2543,7 @@ pkgs:
     "libdnssec" = [ "knot-dns" ];
     "libknot" = [ "knot-dns" ];
     "libzscanner" = [ "knot-dns" ];
-    "libkres" = [ "knot-resolver_5" ];
+    "libkres" = [ (prefer "knot-resolver_5" "knot-resolver") ];
 #    "gssrpc" = [ "krb5" ];
 #    "kadm-client" = [ "krb5" ];
 #    "kadm-server" = [ "krb5" ];
@@ -2537,6 +2651,11 @@ pkgs:
     "baseencode" = [ "libbaseencode" ];
     "libbde" = [ "libbde" ];
     "libbdplus" = [ "libbdplus" ];
+    "libbitcoin" = [ "libbitcoin" ];
+    "libbitcoin-client" = [ "libbitcoin-client" ];
+    "libbitcoin-explorer" = [ "libbitcoin-explorer" ];
+    "libbitcoin-network" = [ "libbitcoin-network" ];
+    "libbitcoin-protocol" = [ "libbitcoin-protocol" ];
     "libbladeRF" = [ "libbladeRF" ];
     "blockdev" = [ "libblockdev" ];
     "blockdev-utils" = [ "libblockdev" ];
@@ -2547,8 +2666,8 @@ pkgs:
     "libbsd-ctor" = [ "libbsd" ];
     "libbsd" = [ "libbsd" ];
     "libbsd-overlay" = [ "libbsd" ];
-    "libbson-1.0" = [ "mongoc" ];
-    "libbson-static-1.0" = [ "mongoc" ];
+    "libbson-1.0" = [ "libbson" ];
+    "libbson-static-1.0" = [ "libbson" ];
     "libbtbb" = [ "libbtbb" ];
     "libburn-1" = [ "libburn" ];
     "libbutl" = [ "libbutl" ];
@@ -2632,7 +2751,13 @@ pkgs:
     "libde265" = [ "libde265" ];
     "libdecor-0" = [ "libdecor" ];
     "deltachat" = [ "libdeltachat" ];
-    "libdigidoc" = [ "libdigidoc" ];
+    "IL" = [ "libdevil" ];
+    "ILU" = [ "libdevil" ];
+    "ILUT" = [ "libdevil" ];
+#    "IL" = [ "libdevil-nox" ];
+#    "ILU" = [ "libdevil-nox" ];
+#    "ILUT" = [ "libdevil-nox" ];
+#    "libdigidoc" = [ "libdigidoc" ];
     "libdigidocpp" = [ "libdigidocpp" ];
     "libdiscid" = [ "libdiscid" ];
     "libdivecomputer" = [ "libdivecomputer" ];
@@ -2709,6 +2834,7 @@ pkgs:
     "libftdi1" = [ "libftdi1" ];
     "libftdipp1" = [ "libftdi1" ];
     "libfyaml" = [ "libfyaml" ];
+    "libgadu" = [ "libgadu" ];
     "gaminggear-0" = [ "libgaminggear" ];
     "libgbinder" = [ "libgbinder" ];
     "libgcrypt" = [ "libgcrypt" ];
@@ -2739,7 +2865,7 @@ pkgs:
 #    "glx" = [ "libglvnd" ];
 #    "libglvnd" = [ "libglvnd" ];
 #    "opengl" = [ "libglvnd" ];
-    "libgme" = [ "game-music-emu" ];
+    "libgme" = [ "libgme" ];
     "libgnome-games-support-1" = [ "libgnome-games-support" ];
     "libgnome-games-support-2" = [ "libgnome-games-support_2_0" ];
     "gnome-keyring-1" = [ "libgnome-keyring" ];
@@ -2757,6 +2883,7 @@ pkgs:
     "libgpod-1.0" = [ "libgpod" ];
     "libgpod-sharp" = [ "libgpod" ];
     "libgringotts" = [ "libgringotts" ];
+    "libgrss" = [ "libgrss" ];
     "libgsf-1" = [ "libgsf" ];
     "libgssglue" = [ "libgssglue" ];
     "gflow-0.8" = [ "libgtkflow" ];
@@ -2772,16 +2899,17 @@ pkgs:
     "libhandy-0.0" = [ "libhandy_0" ];
     "libhangul" = [ "libhangul" ];
     "libheif" = [ "libheif" ];
-    "heimdal-gssapi" = [ "heimdal" ];
-    "heimdal-kadm-client" = [ "heimdal" ];
-    "heimdal-kadm-server" = [ "heimdal" ];
-    "heimdal-krb5" = [ "heimdal" ];
-#    "kadm-client" = [ "heimdal" ];
-#    "kadm-server" = [ "heimdal" ];
-    "kafs" = [ "heimdal" ];
-#    "krb5-gssapi" = [ "heimdal" ];
-#    "krb5" = [ "heimdal" ];
+    "heimdal-gssapi" = [ "libheimdal" ];
+    "heimdal-kadm-client" = [ "libheimdal" ];
+    "heimdal-kadm-server" = [ "libheimdal" ];
+    "heimdal-krb5" = [ "libheimdal" ];
+#    "kadm-client" = [ "libheimdal" ];
+#    "kadm-server" = [ "libheimdal" ];
+    "kafs" = [ "libheimdal" ];
+#    "krb5-gssapi" = [ "libheimdal" ];
+#    "krb5" = [ "libheimdal" ];
     "libhsts" = [ "libhsts" ];
+    "httpseverywhere-0.8" = [ "libhttpseverywhere" ];
     "libhwy-contrib" = [ "libhwy" ];
     "libhwy" = [ "libhwy" ];
     "libhwy-test" = [ "libhwy" ];
@@ -2832,6 +2960,7 @@ pkgs:
     "libjxl_threads" = [ "libjxl" ];
     "kate" = [ "libkate" ];
     "libkeyfinder" = [ "libkeyfinder" ];
+    "kkc-1.0" = [ "libkkc" ];
     "libkqueue" = [ "libkqueue" ];
 #    "gssrpc" = [ "libkrb5" ];
     "kadm-client" = [ "libkrb5" ];
@@ -2850,7 +2979,7 @@ pkgs:
 #    "cblas" = [ "liblapack" ];
     "lapacke" = [ "liblapack" ];
     "lapack" = [ "liblapack" ];
-    "libclastfm" = [ "liblastfmSF" ];
+    "libclastfm" = [ (prefer "liblastfm-vambrose" "liblastfmSF") ];
     "liblcf" = [ "liblcf" ];
     "libliftoff" = [ "libliftoff" ];
     "liblo" = [ "liblo" ];
@@ -2890,6 +3019,7 @@ pkgs:
     "modulemd-2.0" = [ "libmodulemd" ];
 #    "libmongo-client" = [ "libmongo-client" ];
     "libmowgli-2" = [ "libmowgli" ];
+    "libmp3splt" = [ "libmp3splt" ];
     "mpack" = [ "libmpack" ];
     "libmpdclient" = [ "libmpdclient" ];
     "libmpeg2convert" = [ "libmpeg2" ];
@@ -2899,10 +3029,11 @@ pkgs:
     "mt32emu" = [ "libmt32emu" ];
     "libmtp" = [ "libmtp" ];
 #    "libmusicbrainz3" = [ "libmusicbrainz" ];
+    "libmusicbrainz3" = [ "libmusicbrainz3" ];
     "libmusicbrainz5" = [ "libmusicbrainz5" ];
     "libmwaw-0.3" = [ "libmwaw" ];
-
-
+    "mx-1.0" = [ "libmx" ];
+    "mx-gtk-1.0" = [ "libmx" ];
     "libmypaint" = [ "libmypaint" ];
     "libmysofa" = [ "libmysofa" ];
 #    "libmariadb" = [ "libmysqlclient" ];
@@ -2955,6 +3086,8 @@ pkgs:
     "oggz" = [ "liboggz" ];
     "liboil-0.3" = [ "liboil" ];
     "libomxil-bellagio" = [ "libomxil-bellagio" ];
+    "liboop-glib2" = [ "liboop" ];
+    "liboop" = [ "liboop" ];
     "libopenaptx" = [ "libopenaptx" ];
     "libopenmpt" = [ "libopenmpt" ];
     "liboping" = [ "liboping" ];
@@ -3016,6 +3149,7 @@ pkgs:
     "libqb" = [ "libqb" ];
     "qmi-glib" = [ "libqmi" ];
     "qrtr-glib" = [ "libqrtr-glib" ];
+    "Quotient" = [ "libquotient" ];
     "r3" = [ "libr3" ];
     "bcm_host" = [ "libraspberrypi" ];
     "brcmegl" = [ "libraspberrypi" ];
@@ -3029,6 +3163,7 @@ pkgs:
     "libraw1394" = [ "libraw1394" ];
 #    "libraw" = [ "libraw_unstable" ];
 #    "libraw_r" = [ "libraw_unstable" ];
+    "raptor" = [ "librdf_raptor" ];
     "raptor2" = [ "librdf_raptor2" ];
     "rasqal" = [ "librdf_rasqal" ];
 #    "redland" = [ "librdf_redland" ];
@@ -3067,7 +3202,7 @@ pkgs:
     "librsb" = [ "librsb" ];
     "librseq" = [ "librseq" ];
     "librsvg-2.0" = [ "librsvg" ];
-    "librtlsdr" = [ "rtl-sdr" ];
+    "librtlsdr" = [ "librtlsdr" ];
     "rtprocess" = [ "librtprocess" ];
     "rttopo" = [ "librttopo" ];
     "samplerate" = [ "libsamplerate" ];
@@ -3131,6 +3266,7 @@ pkgs:
     "cnmatrix" = [ "libsurvive" ];
     "survive" = [ "libsurvive" ];
     "sysprof-capture-4" = [ "libsysprof-capture" ];
+    "libtap" = [ "libtap" ];
     "libtasn1" = [ "libtasn1" ];
     "libtelnet" = [ "libtelnet" ];
     "tensorflow" = pkgs.lib.optional (builtins.compareVersions pkgs.lib.version "21.11" >= 0) "libtensorflow";
@@ -3301,6 +3437,8 @@ pkgs:
     "libxml++-2.6" = [ "libxmlxx" ];
     "libxml++-3.0" = [ "libxmlxx3" ];
     "libxmp" = [ "libxmp" ];
+    "xplayer-plparser" = [ "libxplayer-plparser" ];
+    "xplayer-plparser-mini" = [ "libxplayer-plparser" ];
     "libexslt" = [ "libxslt" ];
     "libxslt" = [ "libxslt" ];
     "libxsmmext" = [ "libxsmm" ];
@@ -3313,6 +3451,7 @@ pkgs:
     "libyang" = [ "libyang" ];
     "ykneomgr" = [ "libykneomgr" ];
     "libytnef" = [ "libytnef" ];
+    "zapojit-0.0" = [ "libzapojit" ];
     "zdb" = [ "libzdb" ];
     "libzen" = [ "libzen" ];
     "libzim" = [ "libzim" ];
@@ -3519,6 +3658,10 @@ pkgs:
     "system.web.mvc" = [ "mono" ];
     "wcf" = [ "mono" ];
     "xbuild12" = [ "mono" ];
+    "mono-addins-gui" = [ "mono-addins" ];
+    "mono-addins" = [ "mono-addins" ];
+    "mono-addins-msbuild" = [ "mono-addins" ];
+    "mono-addins-setup" = [ "mono-addins" ];
 #    "aspnetwebstack" = [ "mono4" ];
 #    "cecil" = [ "mono4" ];
 #    "dotnet35" = [ "mono4" ];
@@ -3605,7 +3748,7 @@ pkgs:
     "mpv" = [ "mpv" ];
 #    "mpv" = [ "mpv-unwrapped" ];
     "mrsh" = [ "mrsh" ];
-    "msgpack" = [ "msgpack-c" ];
+    "msgpack" = [ "msgpack" ];
     "libmsi-1.0" = [ "msitools" ];
     "mtdev" = [ "mtdev" ];
     "mujs" = [ "mujs" ];
@@ -3711,6 +3854,7 @@ pkgs:
     "notcurses-ffi" = [ "notcurses" ];
     "notcurses" = [ "notcurses" ];
     "notcurses++" = [ "notcurses" ];
+    "notify-sharp-3.0" = [ "notify-sharp" ];
     "npapi-sdk" = [ "npapi_sdk" ];
     "libns3.35-antenna-debug" = [ "ns-3" ];
     "libns3.35-applications-debug" = [ "ns-3" ];
@@ -3836,7 +3980,7 @@ pkgs:
     "openal" = [ "openal" ];
 #    "openal" = [ "openalSoft" ];
     "openbabel-3" = [ "openbabel" ];
-    "openbabel-2.0" = [ "openbabel" ];
+    "openbabel-2.0" = [ "openbabel2" ];
 #    "openbabel-3" = [ "openbabel3" ];
 #    "blas" = [ "openblas" ];
 #    "cblas" = [ "openblas" ];
@@ -3859,6 +4003,7 @@ pkgs:
     "libopenct" = [ "openct" ];
 #    "opencv4" = [ "opencv" ];
 #    "opencv" = [ "opencv2" ];
+    "opencv" = [ "opencv3" ];
 #    "opencv" = [ "opencv3WithoutCuda" ];
     "opencv4" = [ "opencv4" ];
     "opendbx" = [ "opendbx" ];
@@ -3872,7 +4017,7 @@ pkgs:
 #    "OpenEXR" = [ "openexr_3" ];
     "openh264" = [ "openh264" ];
     "openhmd" = [ "openhmd" ];
-    "OpenImageIO" = [ "openimageio" ];
+    "OpenImageIO" = [ "openimageio2" ];
     "OpenIPMIcmdlang" = [ "openipmi" ];
     "OpenIPMI" = [ "openipmi" ];
     "OpenIPMIposix" = [ "openipmi" ];
@@ -3951,6 +4096,7 @@ pkgs:
 #    "gtest" = [ "organicmaps" ];
     "orocos-kdl" = [ "orocos-kdl" ];
     "orocos_kdl" = [ "orocos-kdl" ];
+    "ortp" = [ "ortp" ];
     "coindatanetlib" = [ "osi" ];
     "coindatasample" = [ "osi" ];
     "coinutils" = [ "osi" ];
@@ -4028,7 +4174,7 @@ pkgs:
     "libpcrecpp" = [ "pcre-cpp" ];
 #    "libpcre" = [ "pcre-cpp" ];
 #    "libpcreposix" = [ "pcre-cpp" ];
-    "libpcre16" = [ "pcre2" ];
+    "libpcre16" = [ "pcre16" ];
 #    "libpcre" = [ "pcre16" ];
 #    "libpcreposix" = [ "pcre16" ];
     "libpcre2-16" = [ "pcre2" ];
@@ -4041,6 +4187,7 @@ pkgs:
     "petsc" = [ "petsc" ];
     "PETSc" = [ "petsc" ];
     "pfs" = [ "pfstools" ];
+    "pgf" = [ "pgf_graphics" ];
     "pHash" = [ "phash" ];
     "libphodav-2.0" = [ "phodav" ];
     "physfs" = [ "physfs" ];
@@ -4049,6 +4196,8 @@ pkgs:
     "purple" = [ "pidgin" ];
     "libpipewire-0.3" = [ "pipewire" ];
     "libspa-0.2" = [ "pipewire" ];
+    "libpipewire-0.2" = [ "pipewire_0_2" ];
+    "libspa-0.1" = [ "pipewire_0_2" ];
     "pixman-1" = [ "pixman" ];
     "libpjproject" = [ "pjsip" ];
     "libpkcs11-helper-1" = [ "pkcs11helper" ];
@@ -4118,6 +4267,7 @@ pkgs:
     "primesieve" = [ "primesieve" ];
     "libprocps" = [ "procps" ];
     "proj" = [ "proj" ];
+    "libprojectM" = [ "projectm" ];
     "prometheus-cpp-core" = [ "prometheus-cpp" ];
     "prometheus-cpp" = [ "prometheus-cpp" ];
     "prometheus-cpp-pull" = [ "prometheus-cpp" ];
@@ -4145,7 +4295,9 @@ pkgs:
 #    "libpulse" = [ "pulseaudioFull" ];
 #    "libpulse-simple" = [ "pulseaudioFull" ];
     "pd" = [ "puredata" ];
+    "pxlib" = [ "pxlib" ];
     "py3c" = [ "py3c" ];
+    "pynac" = [ "pynac" ];
     "apiextractor" = [ "pysideApiextractor" ];
     "generatorrunner" = [ "pysideGeneratorrunner" ];
 #    "python-2.7" = [ "python2" ];
@@ -4298,70 +4450,70 @@ pkgs:
 #    "QtUiTools" = [ "qt48Full" ];
 #    "QtXmlPatterns" = [ "qt48Full" ];
 #    "QtXml" = [ "qt48Full" ];
-    "Qt53DAnimation" = [ "qt5" ];
-    "Qt53DCore" = [ "qt5" ];
-    "Qt53DExtras" = [ "qt5" ];
-    "Qt53DInput" = [ "qt5" ];
-    "Qt53DLogic" = [ "qt5" ];
-    "Qt53DQuickAnimation" = [ "qt5" ];
-    "Qt53DQuickExtras" = [ "qt5" ];
-    "Qt53DQuickInput" = [ "qt5" ];
-    "Qt53DQuick" = [ "qt5" ];
-    "Qt53DQuickRender" = [ "qt5" ];
-    "Qt53DQuickScene2D" = [ "qt5" ];
-    "Qt53DRender" = [ "qt5" ];
-    "Qt5Bluetooth" = [ "qt5" ];
-    "Qt5Charts" = [ "qt5" ];
-    "Qt5Concurrent" = [ "qt5" ];
-    "Qt5Core" = [ "qt5" ];
-    "Qt5DBus" = [ "qt5" ];
-    "Qt5Designer" = [ "qt5" ];
-    "Qt5Gui" = [ "qt5" ];
-    "Qt5Help" = [ "qt5" ];
-    "Qt5Location" = [ "qt5" ];
-    "Qt5Multimedia" = [ "qt5" ];
-    "Qt5MultimediaWidgets" = [ "qt5" ];
-    "Qt5Network" = [ "qt5" ];
-    "Qt5Nfc" = [ "qt5" ];
-    "Qt5OpenGLExtensions" = [ "qt5" ];
-    "Qt5OpenGL" = [ "qt5" ];
-    "Qt5Pdf" = [ "qt5" ];
-    "Qt5PdfWidgets" = [ "qt5" ];
-    "Qt5Positioning" = [ "qt5" ];
-    "Qt5PositioningQuick" = [ "qt5" ];
-    "Qt5PrintSupport" = [ "qt5" ];
-    "Qt5QmlModels" = [ "qt5" ];
-    "Qt5Qml" = [ "qt5" ];
-    "Qt5QmlWorkerScript" = [ "qt5" ];
-    "Qt5QuickControls2" = [ "qt5" ];
-    "Qt5Quick" = [ "qt5" ];
-    "Qt5QuickTemplates2" = [ "qt5" ];
-    "Qt5QuickTest" = [ "qt5" ];
-    "Qt5QuickWidgets" = [ "qt5" ];
-    "Qt5Script" = [ "qt5" ];
-    "Qt5ScriptTools" = [ "qt5" ];
-    "Qt5Sensors" = [ "qt5" ];
-    "Qt5SerialPort" = [ "qt5" ];
-    "Qt5Sql" = [ "qt5" ];
-    "Qt5Svg" = [ "qt5" ];
-    "Qt5Test" = [ "qt5" ];
-    "Qt5UiPlugin" = [ "qt5" ];
-    "Qt5UiTools" = [ "qt5" ];
-    "Qt5VirtualKeyboard" = [ "qt5" ];
-    "Qt5WaylandClient" = [ "qt5" ];
-    "Qt5WaylandCompositor" = [ "qt5" ];
-    "Qt5WebChannel" = [ "qt5" ];
-    "Qt5WebEngineCore" = [ "qt5" ];
-    "Qt5WebEngine" = [ "qt5" ];
-    "Qt5WebEngineWidgets" = [ "qt5" ];
-    "Qt5WebKit" = [ "qt5" ];
-    "Qt5WebKitWidgets" = [ "qt5" ];
-    "Qt5WebSockets" = [ "qt5" ];
-    "Qt5WebView" = [ "qt5" ];
-    "Qt5Widgets" = [ "qt5" ];
-    "Qt5X11Extras" = [ "qt5" ];
-    "Qt5XmlPatterns" = [ "qt5" ];
-    "Qt5Xml" = [ "qt5" ];
+    "Qt53DAnimation" = [ "qt5Full" ];
+    "Qt53DCore" = [ "qt5Full" ];
+    "Qt53DExtras" = [ "qt5Full" ];
+    "Qt53DInput" = [ "qt5Full" ];
+    "Qt53DLogic" = [ "qt5Full" ];
+    "Qt53DQuickAnimation" = [ "qt5Full" ];
+    "Qt53DQuickExtras" = [ "qt5Full" ];
+    "Qt53DQuickInput" = [ "qt5Full" ];
+    "Qt53DQuick" = [ "qt5Full" ];
+    "Qt53DQuickRender" = [ "qt5Full" ];
+    "Qt53DQuickScene2D" = [ "qt5Full" ];
+    "Qt53DRender" = [ "qt5Full" ];
+    "Qt5Bluetooth" = [ "qt5Full" ];
+    "Qt5Charts" = [ "qt5Full" ];
+    "Qt5Concurrent" = [ "qt5Full" ];
+    "Qt5Core" = [ "qt5Full" ];
+    "Qt5DBus" = [ "qt5Full" ];
+    "Qt5Designer" = [ "qt5Full" ];
+    "Qt5Gui" = [ "qt5Full" ];
+    "Qt5Help" = [ "qt5Full" ];
+    "Qt5Location" = [ "qt5Full" ];
+    "Qt5Multimedia" = [ "qt5Full" ];
+    "Qt5MultimediaWidgets" = [ "qt5Full" ];
+    "Qt5Network" = [ "qt5Full" ];
+    "Qt5Nfc" = [ "qt5Full" ];
+    "Qt5OpenGLExtensions" = [ "qt5Full" ];
+    "Qt5OpenGL" = [ "qt5Full" ];
+    "Qt5Pdf" = [ "qt5Full" ];
+    "Qt5PdfWidgets" = [ "qt5Full" ];
+    "Qt5Positioning" = [ "qt5Full" ];
+    "Qt5PositioningQuick" = [ "qt5Full" ];
+    "Qt5PrintSupport" = [ "qt5Full" ];
+    "Qt5QmlModels" = [ "qt5Full" ];
+    "Qt5Qml" = [ "qt5Full" ];
+    "Qt5QmlWorkerScript" = [ "qt5Full" ];
+    "Qt5QuickControls2" = [ "qt5Full" ];
+    "Qt5Quick" = [ "qt5Full" ];
+    "Qt5QuickTemplates2" = [ "qt5Full" ];
+    "Qt5QuickTest" = [ "qt5Full" ];
+    "Qt5QuickWidgets" = [ "qt5Full" ];
+    "Qt5Script" = [ "qt5Full" ];
+    "Qt5ScriptTools" = [ "qt5Full" ];
+    "Qt5Sensors" = [ "qt5Full" ];
+    "Qt5SerialPort" = [ "qt5Full" ];
+    "Qt5Sql" = [ "qt5Full" ];
+    "Qt5Svg" = [ "qt5Full" ];
+    "Qt5Test" = [ "qt5Full" ];
+    "Qt5UiPlugin" = [ "qt5Full" ];
+    "Qt5UiTools" = [ "qt5Full" ];
+    "Qt5VirtualKeyboard" = [ "qt5Full" ];
+    "Qt5WaylandClient" = [ "qt5Full" ];
+    "Qt5WaylandCompositor" = [ "qt5Full" ];
+    "Qt5WebChannel" = [ "qt5Full" ];
+    "Qt5WebEngineCore" = [ "qt5Full" ];
+    "Qt5WebEngine" = [ "qt5Full" ];
+    "Qt5WebEngineWidgets" = [ "qt5Full" ];
+    "Qt5WebKit" = [ "qt5Full" ];
+    "Qt5WebKitWidgets" = [ "qt5Full" ];
+    "Qt5WebSockets" = [ "qt5Full" ];
+    "Qt5WebView" = [ "qt5Full" ];
+    "Qt5Widgets" = [ "qt5Full" ];
+    "Qt5X11Extras" = [ "qt5Full" ];
+    "Qt5XmlPatterns" = [ "qt5Full" ];
+    "Qt5Xml" = [ "qt5Full" ];
     "dbus-python" = [ "qtile" ];
     "py3cairo" = [ "qtile" ];
     "pygobject-3.0" = [ "qtile" ];
@@ -4709,7 +4861,7 @@ pkgs:
     "rhythmbox" = [ "rhythmbox" ];
     "riemann-client" = [ "riemann_c_client" ];
     "librinutils" = [ "rinutils" ];
-    "river-protocols" = [ "river-classic" ];
+    "river-protocols" = [ "river" ];
     "rivet" = [ "rivet" ];
     "librz" = [ "rizin" ];
     "rz_analysis" = [ "rizin" ];
@@ -4884,6 +5036,7 @@ pkgs:
     "shadowsocks-libev" = [ "shadowsocks-libev" ];
     "shapelib" = [ "shapelib" ];
     "shared-mime-info" = [ "shared-mime-info" ];
+    "shared-desktop-ontologies" = [ "shared_desktop_ontologies" ];
     "shibsp-lite" = [ "shibboleth-sp" ];
     "shibsp" = [ "shibboleth-sp" ];
     "shine" = [ "shine" ];
@@ -5017,10 +5170,12 @@ pkgs:
     "spice-client-glib-2.0" = [ "spice-gtk" ];
     "spice-client-gtk-3.0" = [ "spice-gtk" ];
     "spice-protocol" = [ "spice-protocol" ];
+    "mozjs-78" = [ "spidermonkey_78" ];
+    "mozjs-91" = [ "spidermonkey_91" ];
     "riscv-disasm" = [ "spike" ];
     "riscv-fesvr" = [ "spike" ];
     "SPIRV-Headers" = [ "spirv-headers" ];
-    "LLVMSPIRVLib" = [ "spirv-llvm-translator" ];
+#    "LLVMSPIRVLib" = [ "spirv-llvm-translator" ];
     "SPIRV-Tools-shared" = [ "spirv-tools" ];
     "SPIRV-Tools" = [ "spirv-tools" ];
     "sqlcipher" = [ "sqlcipher" ];
@@ -5142,9 +5297,10 @@ pkgs:
     "tdutils" = [ "tdlib" ];
     "telepathy-farstream" = [ "telepathy-farstream" ];
     "telepathy-glib" = [ "telepathy-glib" ];
+    "telepathy-logger-0.2" = [ "telepathy-logger" ];
     "mission-control-plugins" = [ "telepathy-mission-control" ];
     "template-glib-1.0" = [ "template-glib" ];
-    "tepl-6" = [ "libgedit-tepl" ];
+    "tepl-6" = [ "tepl" ];
     "tesseract" = [ "tesseract" ];
 #    "tesseract" = [ "tesseract3" ];
 #    "tesseract" = [ "tesseract4" ];
@@ -5217,9 +5373,9 @@ pkgs:
     "unibilium" = [ "unibilium" ];
     "unicorn" = [ "unicorn" ];
     "UnitTest++" = [ "unittest-cpp" ];
-    "odbccr" = [ "unixODBC" ];
-    "odbcinst" = [ "unixODBC" ];
-    "odbc" = [ "unixODBC" ];
+    "odbccr" = [ (prefer "unixodbc" "unixODBC") ];
+    "odbcinst" = [ (prefer "unixodbc" "unixODBC") ];
+    "odbc" = [ (prefer "unixodbc" "unixODBC") ];
     "libcw" = [ "unixcw" ];
     "libunshield" = [ "unshield" ];
     "upower-glib" = [ "upower" ];
@@ -5248,8 +5404,8 @@ pkgs:
 #    "libv4l2rds" = [ "v4l-utils" ];
 #    "libv4l2" = [ "v4l-utils" ];
 #    "libv4lconvert" = [ "v4l-utils" ];
-
-
+    "v8" = [ "v8" ];
+#    "v8" = [ "v8_8_x" ];
 #    "libvala-0.54" = [ "vala" ];
 #    "valadoc-0.54" = [ "vala" ];
 #    "vapigen-0.54" = [ "vala" ];
@@ -5270,6 +5426,8 @@ pkgs:
     "valgrind" = [ "valgrind" ];
 #    "valgrind" = [ "valgrind-light" ];
     "libvalhalla" = [ "valhalla" ];
+    "valum-0.3" = [ "valum" ];
+    "vsgi-0.3" = [ "valum" ];
     "vamp-hostsdk" = [ "vamp-plugin-sdk" ];
     "vamp-sdk" = [ "vamp-plugin-sdk" ];
     "vamp" = [ "vamp-plugin-sdk" ];
@@ -5357,12 +5515,15 @@ pkgs:
     "wayland-server++" = [ "waylandpp" ];
     "wcslib" = [ "wcslib" ];
     "webkit2-sharp-4.0" = [ "webkit2-sharp" ];
-    "javascriptcoregtk-4.0" = [ "webkitgtk_4_1" ];
-    "webkit2gtk-4.0" = [ "webkitgtk_4_1" ];
-    "webkit2gtk-web-extension-4.0" = [ "webkitgtk_4_1" ];
+    "javascriptcoregtk-4.0" = [ "webkitgtk_4_0" ];
+    "webkit2gtk-4.0" = [ "webkitgtk_4_0" ];
+    "webkit2gtk-web-extension-4.0" = [ "webkitgtk_4_0" ];
     "javascriptcoregtk-4.1" = [ "webkitgtk_4_1" ];
     "webkit2gtk-4.1" = [ "webkitgtk_4_1" ];
     "webkit2gtk-web-extension-4.1" = [ "webkitgtk_4_1" ];
+    "javascriptcoregtk-6.0" = [ "webkitgtk_6_0" ];
+    "webkitgtk-6.0" = [ "webkitgtk_6_0" ];
+    "webkitgtk-web-process-extension-6.0" = [ "webkitgtk_6_0" ];
     "webrtc-audio-processing" = [ "webrtc-audio-processing" ];
 #    "webrtc-audio-processing" = [ "webrtc-audio-processing_0_3" ];
     "weechat" = [ "weechat-unwrapped" ];
@@ -5398,7 +5559,7 @@ pkgs:
     "wolfssl" = [ "wolfssl" ];
 #    "libobs" = [ "wrapOBS" ];
     "wv-1.0" = [ "wv" ];
-    "libwxsvg" = [ "wxSVG" ];
+    "libwxsvg" = [ (prefer "wxsvg" "wxSVG") ];
     "wxsqlite3" = [ "wxsqlite3" ];
     "x264" = [ "x264" ];
     "x265" = [ "x265" ];
@@ -5423,6 +5584,7 @@ pkgs:
     "xmltooling-lite" = [ "xml-tooling-c" ];
     "xmltooling" = [ "xml-tooling-c" ];
     "xmlbird" = [ "xmlbird" ];
+    "libfo-0.6" = [ "xmlroff" ];
     "xmlrpc_abyss" = [ "xmlrpc_c" ];
     "xmlrpc_abyss++" = [ "xmlrpc_c" ];
     "xmlrpc_client" = [ "xmlrpc_c" ];
@@ -5449,6 +5611,7 @@ pkgs:
 #    "d0_rijndael" = [ "xonotic-glx-unwrapped" ];
 #    "d0_blind_id" = [ "xonotic-sdl-unwrapped" ];
 #    "d0_rijndael" = [ "xonotic-sdl-unwrapped" ];
+    "xplayer" = [ "xplayer" ];
     "libpainter" = [ "xrdp" ];
     "rfxcodec" = [ "xrdp" ];
     "xrdp" = [ "xrdp" ];
@@ -5502,7 +5665,7 @@ pkgs:
     "zziplib" = [ "zziplib" ];
     "zzipmmapped" = [ "zziplib" ];
 } // pkgs.haskell-nix.extraPkgconfigMappings) //
-  lookupAttrsIn pkgs.xorg {
+  lookupAttrsIn xorgCompat {
     # Adding xlibsWrapper since it was used here beofre.
     # Putting libX11 first though so it can be used to get the version
     # in out dummy pkc-config (see ../overlays/cabal-pkg-config.nix)
@@ -5648,21 +5811,7 @@ pkgs:
     "xorg-server" = [ "xorgserver" ];
     "xorg-sgml-doctools" = [ "xorgsgmldoctools" ];
     "xtrans" = [ "xtrans" ];
-  } // lookupAttrsIn pkgs.linphonePackages {
-    "bctoolbox" = [ "bctoolbox" ];
-    "bctoolbox-tester" = [ "bctoolbox" ];
-    "bcunit" = [ "bcunit" ];
-    "belle-sip" = [ "belle-sip" ];
-    "ortp" = [ "ortp" ];
-  } // lookupAttrsIn pkgs.kdePackages {
-    "Quotient" = [ "libquotient" ];
-  } // {
-    "botan" =
-      if pkgs ? botan3
-        then [ pkgs.botan3 ]
-      else if pkgs ? botan
-        then [ pkgs.botan ]
-      else [];
+} // {
     "gtkglext-1.0"                       =
       if pkgs ? gnome2 && pkgs.gnome2 ? gtkglext && pkgs ? gtk2
         then [ pkgs.gnome2.gtkglext pkgs.gtk2 ]
@@ -5674,6 +5823,8 @@ pkgs:
       else if pkgs ? gdk_pixbuf
         then [ pkgs.gdk_pixbuf ]
       else [];
+    # rocm-thunk was replaced by rocmPackages.rocm-thunk in 23.11
+    # "libhsakmt" = [ pkgs.rocmPackages.rocm-thunk or pkgs.rocm-thunk ];
 } // lib.optionalAttrs (pkgs ? libsigcxx12) {
     # libsigcxx12 was removed in 23.11
     "sigc++-1.2" = [ "libsigcxx12" ];
