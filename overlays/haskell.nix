@@ -734,6 +734,64 @@ final: prev: {
         #   testProjectPlan = withInputs project.plan-nix;
         withInputs = final.recurseIntoAttrs;
 
+          # List the packages bundled with GHC.  Non-exact development shells
+          # include all of them so tools can use packages that are available
+          # from the compiler even when they are not reachable from the
+          # selected project components.
+          ghc-pre-existing = ghc: [
+            "Cabal"
+            "array"
+            "base"
+            "binary"
+            "bytestring"
+            "containers"
+            "deepseq"
+            "directory"
+            "filepath"
+            "ghc-boot"
+            "ghc-boot-th"
+            "ghc-compact"
+            "ghc-heap"
+            "ghc-prim"
+            "ghci"
+            "integer-gmp"
+            "mtl"
+            "parsec"
+            "pretty"
+            "process"
+            "rts"
+            "template-haskell"
+            "text"
+            "time"
+            "transformers"
+          ] ++ final.lib.optionals (!final.stdenv.targetPlatform.isGhcjs || builtins.compareVersions ghc.version "9.0" > 0) [
+            # GHCJS 8.10 does not have these.
+            "Cabal-syntax"
+            "exceptions"
+            "file-io"
+            "ghc"
+            "ghc-bignum"
+            "ghc-experimental"
+            "ghc-internal"
+            "ghc-platform"
+            "ghc-toolchain"
+            "haskeline"
+            "hpc"
+            "libiserv"
+            "os-string"
+            "semaphore-compat"
+            "stm"
+            "xhtml"
+          ] ++ final.lib.optionals (
+                  !final.stdenv.targetPlatform.isGhcjs
+               && !final.stdenv.targetPlatform.isWindows
+               && ghc.enableTerminfo or true) [
+            "terminfo"
+          ] ++ (if final.stdenv.targetPlatform.isWindows
+            then [ "Win32" ]
+            else [ "unix" ]
+          );
+
         # Add this to your tests to make all the dependencies of haskell.nix
         # are tested and cached. Consider using `p.roots` where `p` is a
         # project as it will automatically match the `compiler-nix-name`
