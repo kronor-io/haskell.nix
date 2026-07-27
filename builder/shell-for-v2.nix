@@ -205,7 +205,7 @@ let
   # used for installing unit dirs (which are subtrees of files) so
   # the user's cabal store ends up with symlinks pointing into
   # /nix/store rather than full copies.
-  lndir = pkgs.buildPackages.lndir or pkgs.buildPackages.xorg.lndir;
+  lndir = pkgs.buildPackages.lndir or pkgs.buildPackages.lndir;
 
   # Standalone sync script placed on PATH as
   # `haskell-nix-cabal-store-sync`.  The shell hook invokes it

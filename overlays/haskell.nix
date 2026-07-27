@@ -299,7 +299,7 @@ final: prev: {
               # -----------------------+---------------+------------+
               #
               final.runCommand "dot-cabal" {
-                nativeBuildInputs = [ final.bootstrap-cabal-install final.xorg.lndir ];
+                nativeBuildInputs = [ final.bootstrap-cabal-install final.lndir ];
               } ''
                 # prepopulate hackage
                 mkdir -p $out/packages/hackage.haskell.org

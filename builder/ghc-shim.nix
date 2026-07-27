@@ -60,7 +60,7 @@ in
 pkgsBuildBuild.runCommand "${ghc.name}-shim" {
   preferLocalBuild = true;
   nativeBuildInputs = lib.optionals needsLibShim [
-    (pkgsBuildBuild.lndir or pkgsBuildBuild.xorg.lndir)
+    (pkgsBuildBuild.lndir or pkgsBuildBuild.lndir)
     pkgsBuildBuild.makeWrapper
   ];
   passthru = {

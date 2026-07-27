@@ -101,7 +101,7 @@ let
   composeStore = import ./compose-store.nix {
     inherit lib ghc;
     inherit (pkgs) runCommand;
-    lndir = pkgs.buildPackages.lndir or pkgs.buildPackages.xorg.lndir;
+    lndir = pkgs.buildPackages.lndir or pkgs.buildPackages.lndir;
   };
   # If the host platform has cross-TH plumbing (currently only
   # windows via overlays/windows.nix) it lives at
@@ -142,7 +142,7 @@ let
     inherit lib ghc haskellLib;
     inherit (pkgs) stdenv;
     inherit (buildPackages.buildPackages) runCommand makeWrapper;
-    lndir = buildPackages.buildPackages.lndir or buildPackages.buildPackages.xorg.lndir;
+    lndir = buildPackages.buildPackages.lndir or buildPackages.buildPackages.lndir;
   };
 
   # Builds a derivation which contains a ghc package-db of

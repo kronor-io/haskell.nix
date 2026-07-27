@@ -12,7 +12,7 @@ let
     # Find the versions of mcfgthreads used by stdenv.cc
     (pkgs.threadsCrossFor or (_x: { package = pkgs.windows.mcfgthreads; }) pkgs.stdenv.cc.version).package
     # If we just use `pkgs.buildPackages.gcc.cc` here it breaks the `th-dlls` test. TODO figure out why exactly.
-    (pkgs.buildPackages.runCommand "gcc-only" { nativeBuildInputs = [ pkgs.buildPackages.xorg.lndir ]; } ''
+    (pkgs.buildPackages.runCommand "gcc-only" { nativeBuildInputs = [ pkgs.buildPackages.lndir ]; } ''
       mkdir $out
       lndir ${pkgs.buildPackages.gcc.cc} $out
     '')

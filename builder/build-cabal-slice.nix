@@ -380,7 +380,7 @@ stdenv.mkDerivation ({
   # re-runs the solver for the subset of packages it can see, so
   # rather than plumb a per-slice flag we always include it.
   nativeBuildInputs = [ ghc cabal-install
-                        (pkgsBuildBuild.lndir or pkgsBuildBuild.xorg.lndir)
+                        (pkgsBuildBuild.lndir or pkgsBuildBuild.lndir)
                         buildPackages.cabalPkgConfigWrapper
                         # `jq` is used by the unit-id mismatch diagnostic
                         # to extract / pretty-print plan.json entries for

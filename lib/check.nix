@@ -139,7 +139,7 @@ in stdenv.mkDerivation ((
   meta = builtins.removeAttrs drv.meta ["mainProgram"];
 
   nativeBuildInputs = drv.nativeBuildInputs
-    ++ [(pkgsBuildBuild.lndir or pkgsBuildBuild.xorg.lndir)]
+    ++ [(pkgsBuildBuild.lndir or pkgsBuildBuild.lndir)]
     ++ lib.optional (stdenv.hostPlatform.isGhcjs) pkgsBuildBuild.nodejs;
 
   inherit (component) doCheck doCrossCheck;

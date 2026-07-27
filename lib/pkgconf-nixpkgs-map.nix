@@ -158,7 +158,7 @@ pkgs:
     "pulse-simple"                       = [ "libpulseaudio" ];
     "python-3.3"                         = [ "python33" ];
     "python-3.4"                         = [ "python34" ];
-    "quadprog"                           = [ "QuadProgpp" ];
+    "quadprog"                           = [ "quadprogpp" ];
     "rt"                                 = []; # in glibc
     "rtlsdr"                             = [ "rtl-sdr" ];
     "ruby1.8"                            = [ "ruby" ];
@@ -5620,7 +5620,7 @@ pkgs:
     "xtl" = [ "xtl" ];
     "xwayland" = [ "xwayland" ];
     "libxwiimote" = [ "xwiimote" ];
-    "libxxhash" = [ "xxHash" ];
+    "libxxhash" = [ "xxhash" ];
     "liblzma" = [ "xz" ];
     "yajl" = [ "yajl" ];
     "yara" = [ "yara" ];
