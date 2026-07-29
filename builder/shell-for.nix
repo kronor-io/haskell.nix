@@ -120,10 +120,7 @@ let
   # Set up a "dummy" component to use with ghcForComponent.
   component = {
     depends = packageInputs;
-    pre-existing =
-      if exactDeps
-        then lib.unique (lib.concatMap (x: (haskellLib.dependToLib x).pre-existing or []) allConfigs)
-        else haskell-nix.ghc-pre-existing ghc;
+    pre-existing = lib.unique (lib.concatMap (x: (haskellLib.dependToLib x).pre-existing or []) allConfigs);
     libs         = haskellLib.uniqueWithName (lib.concatMap (x: (haskellLib.dependToLib x).libs or []) allConfigs);
     pkgconfig    = haskellLib.uniqueWithName (lib.concatMap (x: (haskellLib.dependToLib x).pkgconfig or []) allConfigs);
     frameworks   = haskellLib.uniqueWithName (lib.concatMap (x: (haskellLib.dependToLib x).frameworks or []) allConfigs);
