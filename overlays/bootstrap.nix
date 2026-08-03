@@ -19,7 +19,9 @@ in {
       ghc982 = final.haskell.compiler.ghc982;
 
       ghc912 = final.haskell.compiler.ghc912;
-      ghc9122 = final.haskell.compiler.ghc912;
+      ghc9122 = final.haskell.compiler.ghc9122;
+      ghc9123 = final.haskell.compiler.ghc9123;
+      ghc9124 = final.haskell.compiler.ghc9124;
 
       ghc914 = final.haskell.compiler.ghc914;
       ghc9141 = final.haskell.compiler.ghc914;
